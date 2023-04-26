@@ -74,3 +74,4 @@ CMakeLists.txt.user*
 venv/
 *.xlsx
 *.csv
+jobs/

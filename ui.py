@@ -167,20 +167,26 @@ class ParametersForm(QWidget):
         You can specify the parameters' fields and their default values of the algorithm by setting the parameter_fields argument.
         """
         super().__init__()
-        if parameter_fields is None:
-            self.parameters_fields = {
-                "per_grave": "10",
-                "n1": "7",
-                "k": "5",
-                "num_sweeps": "150000",
-                "year": "2022",
-                "month": "9",
-                "lmda": "1.5",
-                "lmdb": "0.5",
-                "lmdc": "0.5",
-                "lmdd": "0.1",
-                "lmde": "0.5",
-            }
+        self.parameters_fields = {
+            "per_grave": "10",
+            "per_num": "13",
+            "per_night": "3",
+            "n1": "7",
+            "n2": "2",
+            "n": "7",
+            "k": "5",
+            "num_sweeps": "150000",
+            "year": "2022",
+            "month": "9",
+            "lmda": "1.5",
+            "lmdb": "0.5",
+            "lmdc": "0.5",
+            "lmdd": "0.1",
+            "lmde": "0.5",
+            "time_limit_sec": "120",
+            "penalty_coef": "10000",
+            "DAUorSA": "DAU"
+        }
         self.initUI()
 
     def initUI(self):
@@ -325,7 +331,7 @@ class WorkingArea(QWidget):
 
         layout.setColumnStretch(0, 2)
         layout.setRowStretch(1, 2)
-        layout.setRowStretch(0, 2)
+        layout.setRowStretch(2, 1)
         layout.addWidget(self.form, 0, 1)
         layout.addWidget(self.table, 0, 0)
         layout.addWidget(self.algorithm_table, 1, 0)
@@ -443,8 +449,7 @@ class Tabs(QWidget):
         """
         self.tabwidget.setCurrentIndex(self.number_of_untitled_tabs - 1)
 
-    def exportWorkingArea(self) -> tuple(pd.DataFrame,
-                                         pd.DataFrame, pd.DataFrame):
+    def exportWorkingArea(self) -> tuple:
         """
         This method exports the working area to a three dataframes.
 

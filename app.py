@@ -15,22 +15,54 @@ class NSPSolver(WorkingArea, Solver):
 
         self.form.runbutton.clicked.connect(self.runTrigger)
 
-    def solve(
-            self,
-            per_grave,
-            n1,
-            k,
-            num_sweeps,
-            year,
-            month,
-            lmda,
-            lmdb,
-            lmdc,
-            lmdd,
-            lmde):
+    def getBasicParameters(self):
+        pass
 
-        shift, dataframe = super().solve(per_grave, n1, k, num_sweeps,
-                                         year, month, lmda, lmdb, lmdc, lmdd, lmde)
+    def solveDAU(self):
+        parameters = self.form.parameters()
+        per_grave = int(parameters["per_grave"])
+        per_num = int(parameters["per_num"])
+        per_night = int(parameters["per_night"])
+        n1 = int(parameters["n1"])
+        n2 = int(parameters["n2"])
+        n = int(parameters["n"])
+        k = int(parameters["k"])
+        num_sweeps = int(parameters["num_sweeps"])
+        year = int(parameters["year"])
+        month = int(parameters["month"])
+        lmda = float(parameters["lmda"])
+        lmdb = float(parameters["lmdb"])
+        lmdc = float(parameters["lmdc"])
+        lmdd = float(parameters["lmdd"])
+        lmde = float(parameters["lmde"])
+        time_limit = int(parameters["time_limit_sec"])
+        penalty_coef = int(parameters["penalty_coef"])
+
+        print("Solve by employing the DAU")
+        shift, algorithm_data = super().solveDAU(per_grave, per_num, per_night, n1, n2, n,
+                                                 k, num_sweeps, year, month, lmda, lmdb, lmdc, lmdd, lmde, time_limit, penalty_coef)
+        print("Done")
+        print(shift)
+        self.table.loadDataFrame(shift)
+        self.algorithm_table.loadDataFrame(algorithm_data)
+        self.running_thread = None
+
+    def solveSA(self):
+        parameters = self.form.parameters()
+        per_grave = int(parameters["per_grave"])
+        n1 = int(parameters["n1"])
+        k = int(parameters["k"])
+        num_sweeps = int(parameters["num_sweeps"])
+        year = int(parameters["year"])
+        month = int(parameters["month"])
+        lmda = float(parameters["lmda"])
+        lmdb = float(parameters["lmdb"])
+        lmdc = float(parameters["lmdc"])
+        lmdd = float(parameters["lmdd"])
+        lmde = float(parameters["lmde"])
+
+        shift, dataframe = super().solveSA(per_grave, n1, k, num_sweeps,
+                                           year, month, lmda, lmdb, lmdc, lmdd, lmde)
         # dataframe = pd.read_csv("./Graveyard_shift.csv")
         # shift = []
         # for i in range(10):
@@ -45,32 +77,13 @@ class NSPSolver(WorkingArea, Solver):
         # collect the parameters
         # TODO: I should check the type and the data format for each parameter
         parameters = self.form.parameters()
-        per_grave = int(parameters["per_grave"])
-        n1 = int(parameters["n1"])
-        k = int(parameters["k"])
-        num_sweeps = int(parameters["num_sweeps"])
-        year = int(parameters["year"])
-        month = int(parameters["month"])
-        lmda = float(parameters["lmda"])
-        lmdb = float(parameters["lmdb"])
-        lmdc = float(parameters["lmdc"])
-        lmdd = float(parameters["lmdd"])
-        lmde = float(parameters["lmde"])
+        DAUorSA = parameters["DAUorSA"]
+        print(DAUorSA)
+        if DAUorSA == 'DAU':
+            self.running_thread = threading.Thread(target=self.solveDAU)
+        else:
+            self.running_thread = threading.Thread(target=self.solveSA)
 
-        self.running_thread = threading.Thread(
-            target=self.solve,
-            args=[
-                per_grave,
-                n1,
-                k,
-                num_sweeps,
-                year,
-                month,
-                lmda,
-                lmdb,
-                lmdc,
-                lmdd,
-                lmde])
         self.running_thread.daemon = True
         self.running_thread.start()
 
