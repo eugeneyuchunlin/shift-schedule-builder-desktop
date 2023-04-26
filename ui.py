@@ -5,10 +5,11 @@ from PySide6.QtWidgets import (
     QTabWidget, QTableWidget, QMenu,
     QVBoxLayout, QLabel, QLineEdit,
     QGridLayout, QFormLayout, QTableWidgetItem,
-    QTextEdit, QFileDialog
+    QTextEdit, QFileDialog, QDialog, QComboBox
 )
 from PySide6.QtGui import QAction
 import pandas as pd
+from parameters import SA_FORM_CONFIG, DAU_FORM_CONFIG
 from util import getFileName
 
 # Important:
@@ -161,32 +162,23 @@ class ParametersForm(QWidget):
                            and the default value of the parameter as the value
     """
 
-    def __init__(self, parameter_fields: dict = None):
+    def __init__(self, running_mode: str = None):
         """
         This is the constructor of the ParametersForm class. It calls the constructor of the QWidget class.
         You can specify the parameters' fields and their default values of the algorithm by setting the parameter_fields argument.
         """
         super().__init__()
-        self.parameters_fields = {
-            "per_grave": "10",
-            "per_num": "13",
-            "per_night": "3",
-            "n1": "7",
-            "n2": "2",
-            "n": "7",
-            "k": "5",
-            "num_sweeps": "150000",
-            "year": "2022",
-            "month": "9",
-            "lmda": "1.5",
-            "lmdb": "0.5",
-            "lmdc": "0.5",
-            "lmdd": "0.1",
-            "lmde": "0.5",
-            "time_limit_sec": "120",
-            "penalty_coef": "10000",
-            "DAUorSA": "DAU"
-        }
+
+        self._running_mode = running_mode
+
+        if self._running_mode is None:
+            self.parameters_fields = DAU_FORM_CONFIG
+        else:
+            if self._running_mode == 'DAU':
+                self.parameters_fields = DAU_FORM_CONFIG
+            elif self._running_mode == 'SA':
+                self.parameters_fields = SA_FORM_CONFIG
+
         self.initUI()
 
     def initUI(self):
@@ -265,6 +257,9 @@ class ParametersForm(QWidget):
         for col in columns:
             getattr(self, col + "_edit").setText(str(df[col][0]))
 
+    def runningMode(self):
+        return self._running_mode
+
 
 class WorkingArea(QWidget):
     """
@@ -289,7 +284,7 @@ class WorkingArea(QWidget):
         log: the log to display the log of the algorithm
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str, running_mode: str):
         """
         This is the constructor of the WorkingArea class. It calls the constructor of the QWidget class.
         You can specify the name of the working area by setting the name argument.
@@ -298,9 +293,11 @@ class WorkingArea(QWidget):
         super().__init__()
 
         self.name = name
-        self.initUI()
+        self.running_mode = running_mode
 
         self.running_thread = None
+
+        self.initUI()
 
     def initUI(self):
         """
@@ -314,7 +311,7 @@ class WorkingArea(QWidget):
         """
         layout = QGridLayout()
         self.table = ShiftTable()
-        self.form = ParametersForm(self.generateEmptyShift)
+        self.form = ParametersForm(self.running_mode)
 
         # connect the signal of edit fields
         self.form.per_grave_edit.editingFinished.connect(
@@ -398,7 +395,7 @@ class Tabs(QWidget):
     tabs = []
     names = []
 
-    def __init__(self, configurationType: QWidget):
+    def __init__(self, configurationType: QWidget, mode: str):
         """
         This is the constructor of the Tabs class. It calls the constructor of the QWidget class.
         You can specify the type of the tab by setting the configurationType argument.
@@ -410,37 +407,37 @@ class Tabs(QWidget):
 
         self.configuration_type = configurationType
 
-        self.initUI()
+        self.initUI(mode)
 
-    def initUI(self):
+    def initUI(self, init_mode):
         """
         This method initializes the ui and creates the tab widget.
         """
         self.tabwidget = QTabWidget()
 
-        self.addANewTab()
+        self.addANewTab(init_mode)
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.tabwidget)
 
         self.setLayout(vbox)
 
-    def addANewTab(self):
+    def addANewTab(self, mode: str):
         """
         This method adds a new tab to the tab widget.
         """
 
         self.number_of_untitled_tabs += 1
         new_tab = self.createATab(
-            "Untitiled" + str(self.number_of_untitled_tabs))
+            "Untitiled" + str(self.number_of_untitled_tabs), mode)
         self.tabs.append(new_tab)
         self.tabwidget.addTab(new_tab, new_tab.name)
 
-    def createATab(self, name: str) -> QWidget:
+    def createATab(self, name: str, mode: str) -> QWidget:
         """
         This method creates a new tab.
         """
-        tab = self.configuration_type(name)
+        tab = self.configuration_type(name, mode)
         return tab
 
     def switchToLastTab(self):
@@ -479,6 +476,36 @@ class Tabs(QWidget):
         self.tabwidget.setTabText(self.tabwidget.currentIndex(), new_name)
 
 
+class RunningModeDialog(QDialog):
+
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Choose a running mode")
+
+        dialog_layout = QVBoxLayout()
+
+        formlayout = QFormLayout()
+        self.combo = QComboBox()
+        self.combo.addItem("DAU")
+        self.combo.addItem("SA")
+
+        formlayout.addRow(QLabel("Choose a running mode"), self.combo)
+        dialog_layout.addLayout(formlayout)
+        okbtn = QPushButton("OK")
+        okbtn.clicked.connect(self.okBtnClicked)
+        dialog_layout.addWidget(okbtn)
+
+        self.setLayout(dialog_layout)
+
+    def mode(self):
+        return self._mode
+
+    def okBtnClicked(self):
+        self._mode = self.combo.currentText()
+        self.close()
+
+
 class MainWindow(QMainWindow):
     # TODO: finish the documentation
     """
@@ -490,9 +517,6 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle("Shift Generator")
-
-        self.configuration = Tabs(Configuration)
-        self.setCentralWidget(self.configuration)
 
         menuBar = self.menuBar()
         fileMenu = menuBar.addMenu("File")
@@ -523,6 +547,10 @@ class MainWindow(QMainWindow):
         saveMenu.addActions([save_all_action, save_action])
         fileMenu.addMenu(saveMenu)
         fileMenu.addActions([seperator_action, export])
+
+        self.configuration = Tabs(
+            Configuration, self.chooseRunningModeDialog())
+        self.setCentralWidget(self.configuration)
 
     def saveFile(self):
         current_tab = self.configuration.currentTab()
@@ -568,8 +596,16 @@ class MainWindow(QMainWindow):
 
         self.configuration.setCurrentTabName(getFileName(filename))
 
+    def chooseRunningModeDialog(self):
+
+        dialog = RunningModeDialog()
+
+        dialog.exec()
+        return dialog.mode()
+
     def newTabTrigger(self):
-        self.configuration.addANewTab()
+        mode = self.chooseRunningModeDialog()
+        self.configuration.addANewTab(mode)
         self.configuration.switchToLastTab()
 
     def closeEvent(self, event):

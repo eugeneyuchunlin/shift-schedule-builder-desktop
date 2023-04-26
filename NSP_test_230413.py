@@ -12,6 +12,14 @@ import time
 from datetime import datetime
 from pytz import timezone
 
+import yaml
+
+with open("config.yml", "r") as f:
+    config = yaml.safe_load(f)
+    client_id = config["client_id"]
+    client_secret = config["client_secret"]
+    my_api_key = config["my_api_key"]
+
 
 class Solver(object):
 
@@ -41,12 +49,10 @@ class Solver(object):
 
         # Define API endpoint and parameters
         # Please replace the client_id and client_secret to yours
-        client_id = ""
-        client_secret = ""
-        my_api_key = ""
         # client_id = "your client id"
         # client_secret = "your client secret"
         # my_api_key = "your api key"
+
         url = "https://api.aispf.global.fujitsu.com"
 
         request_body = {

@@ -9,8 +9,8 @@ import threading
 
 class NSPSolver(WorkingArea, Solver):
 
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self, name, form_config):
+        super().__init__(name, form_config)
         super(Solver, self).__init__()
 
         self.form.runbutton.clicked.connect(self.runTrigger)
@@ -76,8 +76,7 @@ class NSPSolver(WorkingArea, Solver):
     def runTrigger(self):
         # collect the parameters
         # TODO: I should check the type and the data format for each parameter
-        parameters = self.form.parameters()
-        DAUorSA = parameters["DAUorSA"]
+        DAUorSA = self.form.runningMode()
         print(DAUorSA)
         if DAUorSA == 'DAU':
             self.running_thread = threading.Thread(target=self.solveDAU)
