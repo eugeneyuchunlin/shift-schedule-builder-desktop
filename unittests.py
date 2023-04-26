@@ -1,11 +1,10 @@
 import unittest
-import calendar
 from util import getWeekendDate
 from parameterized import parameterized
 
 
 class TestWeekendDate(unittest.TestCase):
-    
+
     @parameterized.expand([
         (2022, 9, [2, 3, 9, 10, 16, 17, 23, 24]),
         (2022, 10, [0, 1, 7, 8, 14, 15, 21, 22, 28, 29]),
@@ -22,10 +21,11 @@ class TestWeekendDate(unittest.TestCase):
         (2023, 9, [1, 2, 8, 9, 15, 16, 22, 23, 29]),
         (2023, 10, [0, 6, 7, 13, 14, 20, 21, 27, 28]),
         (2023, 11, [3, 4, 10, 11, 17, 18, 24, 25])
-       ])
+    ])
     def testGetWeekendDate(self, year, month, expected):
         weekend_dates = getWeekendDate(year, month)
         self.assertEqual(weekend_dates, expected)
+
 
 if __name__ == '__main__':
     unittest.main()
