@@ -1,5 +1,6 @@
 import sys
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMessageBox
+from PySide6.QtCore import Signal
 from ui import MainWindow, WorkingArea
 from NSP_test_230413 import Solver
 
@@ -9,11 +10,14 @@ import threading
 
 class NSPSolver(WorkingArea, Solver):
 
+    error = Signal(str)
+
     def __init__(self, name, form_config):
         super().__init__(name, form_config)
         super(Solver, self).__init__()
 
         self.form.runbutton.clicked.connect(self.runTrigger)
+        self.error.connect(self.showAlertMessageBox)
 
     def getBasicParameters(self):
         pass
@@ -39,9 +43,14 @@ class NSPSolver(WorkingArea, Solver):
         penalty_coef = int(parameters["penalty_coef"])
 
         print("Solve by employing the DAU")
-        shift, algorithm_data = super().solveDAU(per_grave, per_num, per_night, n1, n2, n,
-                                                 k, num_sweeps, year, month, lmda, lmdb, lmdc, lmdd, lmde, time_limit, penalty_coef)
-        print("Done")
+
+        try:
+            shift, algorithm_data = super().solveDAU(per_grave, per_num, per_night, n1, n2, n,
+                                                     k, num_sweeps, year, month, lmda, lmdb, lmdc, lmdd, lmde, time_limit, penalty_coef)
+        except Exception as e:
+            # Show the error message
+            self.error.emit(str(e))
+            return
         print(shift)
         self.table.loadDataFrame(shift)
         self.algorithm_table.loadDataFrame(algorithm_data)
@@ -60,9 +69,12 @@ class NSPSolver(WorkingArea, Solver):
         lmdc = float(parameters["lmdc"])
         lmdd = float(parameters["lmdd"])
         lmde = float(parameters["lmde"])
-
-        shift, dataframe = super().solveSA(per_grave, n1, k, num_sweeps,
-                                           year, month, lmda, lmdb, lmdc, lmdd, lmde)
+        try:
+            shift, dataframe = super().solveSA(per_grave, n1, k, num_sweeps,
+                                               year, month, lmda, lmdb, lmdc, lmdd, lmde)
+        except Exception as e:
+            self.error.emit(str(e))
+            return
         # dataframe = pd.read_csv("./Graveyard_shift.csv")
         # shift = []
         # for i in range(10):
@@ -85,6 +97,15 @@ class NSPSolver(WorkingArea, Solver):
 
         self.running_thread.daemon = True
         self.running_thread.start()
+
+    def showAlertMessageBox(self, alert_msg):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("Error")
+        msg.setInformativeText(alert_msg)
+        msg.setWindowTitle("Error")
+        msg.addButton(QMessageBox.Ok)
+        msg.exec()
 
 
 if __name__ == "__main__":
