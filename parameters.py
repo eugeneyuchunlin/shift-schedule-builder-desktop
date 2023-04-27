@@ -6,7 +6,6 @@ DAU_FORM_CONFIG = {
     "n2": "2",
     "n": "7",
     "k": "5",
-    "num_sweeps": "150000",
     "year": "2022",
     "month": "9",
     "lmda": "1.5",
