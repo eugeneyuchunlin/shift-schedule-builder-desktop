@@ -11,6 +11,14 @@ class Solver(QThread):
     error = Signal(str)
 
     def __init__(self):
+        # self.shift = []
+        # for i in range(10):
+        #     self.shift.append([0] * 31)
+        
+        # self.shift = pd.DataFrame(self.shift, columns=[str(i) for i in range(1, 32)])
+        
+        # self.algorithm_data = []
+        # self.algorithm_data = pd.read_csv('.\Graveyard_shift.csv')
 
         super().__init__()
 
@@ -27,12 +35,13 @@ class DAUSolver(Solver, QuantumAnnealingAlgorithm):
         pass
 
     def run(self):
+        # print("DAUSolver run")
         try:
-            shift, algorithm_data = self.solve(**self._parameters)
+            self.shift, self.algorithm_data = self.solve(**self._parameters)
         except Exception as e:
             self.error.emit(str(e))
             return
-        self.finished.emit(shift, algorithm_data)
+        self.finished.emit(self.shift, self.algorithm_data)
 
 
 
@@ -43,9 +52,10 @@ class SASolver(Solver, SimulatedAnnealingAlgorithm):
         super(SimulatedAnnealingAlgorithm, self).__init__()
 
     def run(self):
+        # print("SASolver run")
         try:
-            shift, algorithm_data = self.solve(**self._parameters)
+            self.shift, self.algorithm_data = self.solve(**self._parameters)
         except Exception as e:
             self.error.emit(str(e))
             return
-        self.finished.emit(shift, algorithm_data)
+        self.finished.emit(self.shift, self.algorithm_data)

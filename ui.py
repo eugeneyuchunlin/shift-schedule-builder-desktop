@@ -527,7 +527,7 @@ class MainWindow(QMainWindow):
         open_action = QAction("Open", self)
         open_action.triggered.connect(self.openFile)
         open_action.setShortcut("Ctrl+o")
-#        open_action.setEnabled(False)
+        open_action.setEnabled(False)
 
         saveMenu = QMenu("Save")
         save_all_action = QAction("Save All", self)

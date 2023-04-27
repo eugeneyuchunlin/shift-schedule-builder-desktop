@@ -15,26 +15,26 @@ class NSPSolver(WorkingArea):
     dau_solver = DAUSolver()
     sa_solver = SASolver()
 
-    def __init__(self, name, form_config):
-        super().__init__(name, form_config)
+    # TODO: enable user to register new solver
+    def __init__(self, name, mode):
+        super().__init__(name, mode)
+
+        if mode == 'DAU':
+            self.solver = DAUSolver()
+        elif mode == 'SA':
+            self.solver = SASolver()
+    
 
         self.form.runbutton.clicked.connect(self.runTrigger)
-        self.dau_solver.error.connect(self.errorHandlerSlot)
-        self.sa_solver.error.connect(self.errorHandlerSlot)
-        self.dau_solver.finished.connect(self.finishRunningSlot)
-        self.sa_solver.finished.connect(self.finishRunningSlot)
+        self.solver.error.connect(self.errorHandlerSlot)
 
+        self.solver.finished.connect(self.finishRunningSlot)
 
     def runTrigger(self):
-        DAUorSA = self.form.runningMode()
         parameters = self.form.parameters()
         print(parameters)
-        if DAUorSA == 'DAU':
-            self.dau_solver.setParameters(**parameters)
-            self.dau_solver.start()
-        else:
-            self.sa_solver.setParameters(**parameters)
-            self.sa_solver.start()
+        self.solver.setParameters(**parameters)
+        self.solver.start()
 
         self.form.runbutton.setDisabled(True)
 
@@ -51,6 +51,8 @@ class NSPSolver(WorkingArea):
         self.form.runbutton.setDisabled(False) 
 
     def finishRunningSlot(self, shift:pd.DataFrame, algorithm_data:pd.DataFrame):
+        # print("finishRunningSlot")
+        # print(id(self.table))
         self.table.loadDataFrame(shift)
         self.algorithm_table.loadDataFrame(algorithm_data)
         self.form.runbutton.setDisabled(False)
