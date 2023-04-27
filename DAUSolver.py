@@ -1,18 +1,20 @@
+from datetime import datetime
 from pyqubo import Binary, Constraint, Placeholder, Array, And, Or, Not
-from time import process_time
+from pytz import timezone
 from util import getWeekendDate
+
 import numpy as np
 import pandas as pd
-import calendar
-import json
-import neal
+
 import requests
 import base64
 import time
-from datetime import datetime
-from pytz import timezone
-
+import json
 import yaml
+import calendar
+
+from console import Logger
+
 
 with open("config.yml", "r") as f:
     config = yaml.safe_load(f)
@@ -21,37 +23,38 @@ with open("config.yml", "r") as f:
     my_api_key = config["my_api_key"]
 
 
-class Solver(object):
+
+class QuantumAnnealingAlgorithm(object):
 
     def __init__(self):
-        self.shift_name = ['Graveyard', 'Night', 'Day']
-        self.sampler = neal.SimulatedAnnealingSampler()
+        self.logger = Logger()
+        pass
 
-    def solveDAU(
-            self,
-            per_grave,
-            per_num,
-            per_night,
-            n1,
-            n2,
-            n,
-            k,
-            num_sweeps,
-            year,
-            month,
-            lmda,
-            lmdb,
-            lmdc,
-            lmdd,
-            lmde,
-            time_limit_sec,
-            penalty_coef):
+    def solve(self, **kwargs):
 
         # Define API endpoint and parameters
         # Please replace the client_id and client_secret to yours
         # client_id = "your client id"
         # client_secret = "your client secret"
         # my_api_key = "your api key"
+
+        per_grave = int(kwargs["per_grave"])
+        per_num = int(kwargs["per_num"])
+        per_night = int(kwargs["per_night"])
+        n1 = int(kwargs["n1"])
+        n2 = int(kwargs["n2"])
+        n = int(kwargs["n"])
+        k = int(kwargs["k"])
+        year = int(kwargs["year"])
+        month = int(kwargs["month"])
+        lmda = float(kwargs["lmda"])
+        lmdb = float(kwargs["lmdb"])
+        lmdc = float(kwargs["lmdc"])
+        lmdd = float(kwargs["lmdd"])
+        lmde = float(kwargs["lmde"])
+        time_limit_sec = int(kwargs["time_limit_sec"])
+        penalty_coef = int(kwargs["penalty_coef"])
+
 
         url = "https://api.aispf.global.fujitsu.com"
 
@@ -81,7 +84,7 @@ class Solver(object):
         token = response.json()['access_token']
 
         # Put the token in the later query
-        print(token)
+        self.logger.log(token)
 
         # setup
 
@@ -157,7 +160,7 @@ class Solver(object):
         lmdb = 0.5
         Hb = 0
         cycle = len(shift_kd[0])
-        print(cycle)
+        self.logger.log(cycle)
         slack_initial = Array.create(
             "slack1",
             shape=per_grave * cycle * k,
@@ -261,7 +264,7 @@ class Solver(object):
                 default=int))  # json.dumps(problem_body,indent=4,default=int))
 
         job_id = response.json()['job_id']
-        print(job_id)
+        self.logger.log(job_id)
 
         solution_header = {
             "Job_ID": job_id,
@@ -276,24 +279,24 @@ class Solver(object):
         solution = requests.get(
             url + "/da/v3/async/jobs/result/" + job_id,
             headers=solution_header)
-        print(solution.json())
+        self.logger.log(solution.json())
         while (solution.json()["status"] == "Running" or solution.json()[
                "status"] == "Waiting"):
             solution = requests.get(
                 url + "/da/v3/async/jobs/result/" + job_id,
                 headers=solution_header)
-            print(solution.json()['status'] + "...")
+            self.logger.log(solution.json()['status'] + "...")
             time.sleep(5)
 
         if solution.json()["qubo_solution"]["result_status"]:
-            print(solution.json()["qubo_solution"]["result_status"])
+            self.logger.log(solution.json()["qubo_solution"]["result_status"])
         else:
-            print("FALSE")
+            self.logger.log("FALSE")
 
         solve_time = solution.json()["qubo_solution"]["timing"]["solve_time"]
         solve_energy = solution.json(
         )["qubo_solution"]["solutions"][0]["energy"]
-        print(solve_time, solve_energy + offset)
+        self.logger.log(solve_time, solve_energy + offset)
 
         solution_set = solution.json()["qubo_solution"]["solutions"][0]
         solution_configuration = solution_set['configuration']
@@ -304,9 +307,9 @@ class Solver(object):
             else:
                 solution_dict[i] = 0
         decoded_sample2 = model.decode_sample(solution_dict, vartype='BINARY')
-        print(type(decoded_sample2))
-        print(decoded_sample2.energy, decoded_sample2.constraints())
-        print(solution_dict)
+        self.logger.log(type(decoded_sample2))
+        self.logger.log(decoded_sample2.energy, decoded_sample2.constraints())
+        self.logger.log(solution_dict)
 
         graveyard_list = list(range(per_grave))
         graveyard_table = np.zeros(per_grave * days)
@@ -318,7 +321,7 @@ class Solver(object):
         graveyard_dic = {graveyard_list[i]: graveyard_table[i].tolist()
                          for i in range(per_grave)}
 
-        print(graveyard_table)
+        self.logger.log(graveyard_table)
 
         # 下面的google drive路徑要自己改成你想要儲存的資料夾
         with open('./jobs/result' + job_id + '.json', 'w') as f:
@@ -331,7 +334,7 @@ class Solver(object):
             url + "/da/v3/async/jobs/result/" + job_id,
             headers=solution_header)
         # print(response_delete.json())
-        print(job_id + " is deleted")
+        self.logger.log(job_id + " is deleted")
 
         # If you want to list all the jobs, use the following
         # Please delete the job if the job is finished and you had downloaded
@@ -340,7 +343,7 @@ class Solver(object):
         job_list = requests.get(
             url + "/da/v3/async/jobs",
             headers=problem_header)
-        print(job_list.json())
+        self.logger.log(job_list.json())
 
         # Save the results in job list
         response_dict = json.loads(json.dumps(job_list.json()))
@@ -355,11 +358,11 @@ class Solver(object):
             start_time_utc = datetime.strptime(
                 job_status['start_time'], '%Y-%m-%dT%H:%M:%SZ')
             start_time_tw = start_time_utc.astimezone(tz)
-            print('Job ID:', job_id)
-            print('Job Status:', status)
+            self.logger.log('Job ID:', job_id)
+            self.logger.log('Job Status:', status)
             # print('Start Time (UTC):', start_time_utc)
-            print('Start Time (TW):', start_time_tw)
-            print()  # 空行分隔
+            self.logger.log('Start Time (TW):', start_time_tw)
+            self.logger.log()  # 空行分隔
             job_txt = {
                 'Job ID': job_id,
                 'Job Status': status,
@@ -410,172 +413,4 @@ class Solver(object):
                 str(i) for i in range(
                     1, days + 1)]), pd.DataFrame(data)
 
-    def solveSA(self, per_grave, n1, k, num_sweeps, year, month, lmda,
-                lmdb, lmdc, lmdd, lmde):
 
-        days = calendar.monthrange(year, month)[1]
-        weekend = getWeekendDate(year, month)
-
-        # Graveyard shift
-        # Generate Binary table of Graveyard shift
-
-        X_initial = Array.create(
-            "Graveyard",
-            shape=per_grave * days,
-            vartype="BINARY")
-        X = np.zeros(per_grave * days).reshape(per_grave, days)
-        X = X.tolist()
-        for i in range(per_grave):
-            for j in range(days):
-                X[i][j] = X_initial[days * i + j]
-
-        # Number of workers in each day
-        whole_shift = []
-        for i in range(days):
-            col_sum = 0  # sum of each column
-            for j in range(per_grave):
-                col_sum = col_sum + X[j][i]
-            whole_shift.append(col_sum)
-
-        # k+1 days sum
-        shift_kd = []
-        for i in range(per_grave):
-            per_sumkd = []
-            for j in range(days - k):
-                temp = sum(X[i][p] for p in range(j, j + k + 1))
-                per_sumkd.append(temp)
-            shift_kd.append(per_sumkd)
-
-        # Limit of workers in each shift-period
-
-        Ha = sum((whole_shift[i] - n1)**2 for i in range(days))
-
-        # Limit of 2 - 5 days each cycle
-
-        Hb = 0
-        # the cycle of shift_kd would be (per_grave, days - k)
-        cycle = len(shift_kd[0])
-        print(cycle)
-        slack = Array.create(
-            "slack",
-            shape=(
-                per_grave,
-                cycle * k),
-            vartype="BINARY")
-        for i in range(per_grave):
-            for j in range(cycle):
-                # To adapt the condition k is not equal to 4, a for-loop needed
-                Hb = Hb + (shift_kd[i][j] - sum(slack[i][l]
-                           for l in range(k * j, k * j + k)))**2
-
-        Hc = 0
-        for i in range(per_grave):
-            for j in range(days - 2):
-                Hc = Hc + And(X[i][j + 1], 1 - Or(X[i][j], X[i][j + 2]))
-            Hc = Hc + (And(X[i][0], Not(X[i][1]))) + \
-                (And(X[i][days - 1], Not(X[i][days - 2])))
-
-        # a weekday leave
-
-        He = 0
-        week_slack = Array.create(
-            "slack2", shape=(
-                per_grave, days), vartype="BINARY")
-
-        for j in range(per_grave):
-            for i in weekend[::2]:
-                if i + 7 < days:
-                    He = He + (sum(X[j][l] for l in range(i, i + 7)) -
-                               sum(week_slack[j][l] for l in range(i, i + 5)))**2
-                elif i + 5 < days and i + 7 > days:
-                    He = He + (sum(X[j][l] for l in range(i, days)) -
-                               sum(week_slack[j][l] for l in range(i, i + 5)))**2
-
-        # Continuously 2-days leaves optimization
-
-        Hd = 0
-        for i in range(per_grave):
-            for j in range(days - 1):
-                Hd = Hd + (1 - X[i][j] * X[i][j + 1])
-
-        # The Hamiltonian
-        # H = lmda*Constraint(Ha,"eachshift") + lmdc*Constraint(Hb,"kdays") + lmdc*Constraint(Hc, "2days") + lmde*Constraint(He,"weekdayleave")
-        H = lmda * Constraint(Ha,
-                              "eachshift") + lmdc * Constraint(Hb,
-                                                               "kdays") + lmdc * Constraint(Hc,
-                                                                                            "2days") + lmde * Constraint(He,
-                                                                                                                         "weekdayleave")
-        model = H.compile()
-        bqm = model.to_bqm()
-        var = model.variables
-        print(len(var))
-
-        data = []
-
-        for i in range(10):
-            start_time = process_time()
-            sampleset = self.sampler.sample(
-                bqm, num_reads=10, num_sweeps=num_sweeps)
-            decoded_samples = model.decode_sampleset(sampleset)
-            graveyard_sampleset = min(decoded_samples, key=lambda s: s.energy)
-            graveyard_record = graveyard_sampleset.sample
-            dec = model.decode_sample(graveyard_record, vartype='BINARY')
-            end_time = process_time()
-            process_time1 = end_time - start_time
-            energy = dec.energy
-            constraints = dec.constraints()
-            print(constraints)
-            constraints1 = {}
-            for key, value in constraints.items():
-                constraints1[key] = value[1]
-            # enter the data
-            data_everytime = [
-                per_grave,
-                n1,
-                len(var),
-                energy,
-                constraints1['weekdayleave'],
-                constraints1['eachshift'],
-                constraints1['kdays'],
-                constraints1['2days'],
-                process_time1,
-                num_sweeps]
-            data.append(data_everytime)
-
-        # Output the DataFrame
-        # Generate the empty shift table and lables
-        label = [
-            'per_grave',
-            'shift_grave',
-            'num_var',
-            'energy',
-            'weekdayleave',
-            'eachshift',
-            'kdays',
-            '2days',
-            'process_time',
-            'num_sweeps']
-        df = pd.DataFrame(data, columns=label)
-        df = df.applymap(str)
-        # filename = 'Graveyard_shift.csv'
-        # df.to_csv(filename, index=False, quoting=csv.QUOTE_NONNUMERIC)
-
-        graveyard_list = list(range(per_grave))
-        graveyard_table = np.zeros(per_grave * days)
-        for key, value in graveyard_record.items():
-            if "Graveyard" in key and "*" not in key:
-                newkey = int(key.replace("Graveyard[", "").replace("]", ""))
-                graveyard_table[newkey] = value
-        graveyard_table = graveyard_table.reshape(per_grave, days).astype(int)
-        graveyard_dic = {
-            graveyard_list[i]: graveyard_table[i].tolist() for i in range(per_grave)}
-
-        print(graveyard_table)
-
-        self.shift_result = graveyard_table
-        self.algorithm_data = data
-
-        return pd.DataFrame(
-            graveyard_table, columns=[
-                str(i) for i in range(
-                    1, days + 1)]), df
