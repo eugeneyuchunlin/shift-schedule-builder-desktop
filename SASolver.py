@@ -7,6 +7,7 @@ import pandas as pd
 import neal
 import time
 import calendar
+from console import Logger
 
 
 class SimulatedAnnealingAlgorithm(object):
@@ -14,6 +15,8 @@ class SimulatedAnnealingAlgorithm(object):
     def __init__(self):
         self.shift_name = ['Graveyard', 'Night', 'Day']
         self.sampler = neal.SimulatedAnnealingSampler()
+
+        self.logger = Logger()
    
     def solve(self, **kwargs):
 
@@ -71,7 +74,7 @@ class SimulatedAnnealingAlgorithm(object):
         Hb = 0
         # the cycle of shift_kd would be (per_grave, days - k)
         cycle = len(shift_kd[0])
-        print(cycle)
+        self.logger.log(cycle)
         slack = Array.create(
             "slack",
             shape=(
@@ -124,7 +127,7 @@ class SimulatedAnnealingAlgorithm(object):
         model = H.compile()
         bqm = model.to_bqm()
         var = model.variables
-        print(len(var))
+        self.logger.log(len(var))
 
         data = []
 
@@ -140,7 +143,7 @@ class SimulatedAnnealingAlgorithm(object):
             process_time1 = end_time - start_time
             energy = dec.energy
             constraints = dec.constraints()
-            print(constraints)
+            self.logger.log(constraints)
             constraints1 = {}
             for key, value in constraints.items():
                 constraints1[key] = value[1]
@@ -186,7 +189,7 @@ class SimulatedAnnealingAlgorithm(object):
         graveyard_dic = {
             graveyard_list[i]: graveyard_table[i].tolist() for i in range(per_grave)}
 
-        print(graveyard_table)
+        self.logger.log(graveyard_table)
 
         self.shift_result = graveyard_table
         self.algorithm_data = data

@@ -12,8 +12,6 @@ import threading
 class NSPSolver(WorkingArea):
 
 
-    dau_solver = DAUSolver()
-    sa_solver = SASolver()
 
     # TODO: enable user to register new solver
     def __init__(self, name, mode):
@@ -29,6 +27,9 @@ class NSPSolver(WorkingArea):
         self.solver.error.connect(self.errorHandlerSlot)
 
         self.solver.finished.connect(self.finishRunningSlot)
+
+        print(type(self.solver.logger.log_signal))
+        self.solver.logger.log_signal.connect(self.log.append)
 
     def runTrigger(self):
         parameters = self.form.parameters()

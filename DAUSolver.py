@@ -13,6 +13,7 @@ import json
 import yaml
 import calendar
 
+from console import Logger
 
 
 with open("config.yml", "r") as f:
@@ -26,7 +27,7 @@ with open("config.yml", "r") as f:
 class QuantumAnnealingAlgorithm(object):
 
     def __init__(self):
-
+        self.logger = Logger()
         pass
 
     def solve(self, **kwargs):
@@ -53,7 +54,7 @@ class QuantumAnnealingAlgorithm(object):
         lmde = float(kwargs["lmde"])
         time_limit_sec = int(kwargs["time_limit_sec"])
         penalty_coef = int(kwargs["penalty_coef"])
-        
+
 
         url = "https://api.aispf.global.fujitsu.com"
 
@@ -83,7 +84,7 @@ class QuantumAnnealingAlgorithm(object):
         token = response.json()['access_token']
 
         # Put the token in the later query
-        print(token)
+        self.logger.log(token)
 
         # setup
 
@@ -159,7 +160,7 @@ class QuantumAnnealingAlgorithm(object):
         lmdb = 0.5
         Hb = 0
         cycle = len(shift_kd[0])
-        print(cycle)
+        self.logger.log(cycle)
         slack_initial = Array.create(
             "slack1",
             shape=per_grave * cycle * k,
@@ -263,7 +264,7 @@ class QuantumAnnealingAlgorithm(object):
                 default=int))  # json.dumps(problem_body,indent=4,default=int))
 
         job_id = response.json()['job_id']
-        print(job_id)
+        self.logger.log(job_id)
 
         solution_header = {
             "Job_ID": job_id,
@@ -278,24 +279,24 @@ class QuantumAnnealingAlgorithm(object):
         solution = requests.get(
             url + "/da/v3/async/jobs/result/" + job_id,
             headers=solution_header)
-        print(solution.json())
+        self.logger.log(solution.json())
         while (solution.json()["status"] == "Running" or solution.json()[
                "status"] == "Waiting"):
             solution = requests.get(
                 url + "/da/v3/async/jobs/result/" + job_id,
                 headers=solution_header)
-            print(solution.json()['status'] + "...")
+            self.logger.log(solution.json()['status'] + "...")
             time.sleep(5)
 
         if solution.json()["qubo_solution"]["result_status"]:
-            print(solution.json()["qubo_solution"]["result_status"])
+            self.logger.log(solution.json()["qubo_solution"]["result_status"])
         else:
-            print("FALSE")
+            self.logger.log("FALSE")
 
         solve_time = solution.json()["qubo_solution"]["timing"]["solve_time"]
         solve_energy = solution.json(
         )["qubo_solution"]["solutions"][0]["energy"]
-        print(solve_time, solve_energy + offset)
+        self.logger.log(solve_time, solve_energy + offset)
 
         solution_set = solution.json()["qubo_solution"]["solutions"][0]
         solution_configuration = solution_set['configuration']
@@ -306,9 +307,9 @@ class QuantumAnnealingAlgorithm(object):
             else:
                 solution_dict[i] = 0
         decoded_sample2 = model.decode_sample(solution_dict, vartype='BINARY')
-        print(type(decoded_sample2))
-        print(decoded_sample2.energy, decoded_sample2.constraints())
-        print(solution_dict)
+        self.logger.log(type(decoded_sample2))
+        self.logger.log(decoded_sample2.energy, decoded_sample2.constraints())
+        self.logger.log(solution_dict)
 
         graveyard_list = list(range(per_grave))
         graveyard_table = np.zeros(per_grave * days)
@@ -320,7 +321,7 @@ class QuantumAnnealingAlgorithm(object):
         graveyard_dic = {graveyard_list[i]: graveyard_table[i].tolist()
                          for i in range(per_grave)}
 
-        print(graveyard_table)
+        self.logger.log(graveyard_table)
 
         # 下面的google drive路徑要自己改成你想要儲存的資料夾
         with open('./jobs/result' + job_id + '.json', 'w') as f:
@@ -333,7 +334,7 @@ class QuantumAnnealingAlgorithm(object):
             url + "/da/v3/async/jobs/result/" + job_id,
             headers=solution_header)
         # print(response_delete.json())
-        print(job_id + " is deleted")
+        self.logger.log(job_id + " is deleted")
 
         # If you want to list all the jobs, use the following
         # Please delete the job if the job is finished and you had downloaded
@@ -342,7 +343,7 @@ class QuantumAnnealingAlgorithm(object):
         job_list = requests.get(
             url + "/da/v3/async/jobs",
             headers=problem_header)
-        print(job_list.json())
+        self.logger.log(job_list.json())
 
         # Save the results in job list
         response_dict = json.loads(json.dumps(job_list.json()))
@@ -357,11 +358,11 @@ class QuantumAnnealingAlgorithm(object):
             start_time_utc = datetime.strptime(
                 job_status['start_time'], '%Y-%m-%dT%H:%M:%SZ')
             start_time_tw = start_time_utc.astimezone(tz)
-            print('Job ID:', job_id)
-            print('Job Status:', status)
+            self.logger.log('Job ID:', job_id)
+            self.logger.log('Job Status:', status)
             # print('Start Time (UTC):', start_time_utc)
-            print('Start Time (TW):', start_time_tw)
-            print()  # 空行分隔
+            self.logger.log('Start Time (TW):', start_time_tw)
+            self.logger.log()  # 空行分隔
             job_txt = {
                 'Job ID': job_id,
                 'Job Status': status,
