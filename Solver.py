@@ -1,7 +1,5 @@
 from PySide6.QtCore import Signal, QThread
-from DAUSolver import QuantumAnnealingAlgorithm
-from SASolver import SimulatedAnnealingAlgorithm
-
+from console import Logger
 import pandas as pd
 
 
@@ -22,40 +20,20 @@ class Solver(QThread):
         # self.algorithm_data = pd.read_csv('.\Graveyard_shift.csv')
 
         super().__init__()
+        self.logger = Logger()
 
     def setParameters(self, **kwargs):
         self._parameters = kwargs
         pass
 
-
-class DAUSolver(Solver, QuantumAnnealingAlgorithm):
-
-    def __init__(self):
-        super().__init__()
-        super(QuantumAnnealingAlgorithm, self).__init__()
+    def solver(self):
         pass
 
     def run(self):
-        # print("DAUSolver run")
         try:
             self.shift, self.algorithm_data = self.solve(**self._parameters)
         except Exception as e:
             self.error.emit(str(e))
             return
         self.finished.emit(self.shift, self.algorithm_data)
-
-
-class SASolver(Solver, SimulatedAnnealingAlgorithm):
-
-    def __init__(self):
-        super().__init__()
-        super(SimulatedAnnealingAlgorithm, self).__init__()
-
-    def run(self):
-        # print("SASolver run")
-        try:
-            self.shift, self.algorithm_data = self.solve(**self._parameters)
-        except Exception as e:
-            self.error.emit(str(e))
-            return
-        self.finished.emit(self.shift, self.algorithm_data)
+        pass

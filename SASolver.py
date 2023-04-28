@@ -7,16 +7,15 @@ import pandas as pd
 import neal
 import time
 import calendar
-from console import Logger
+from Solver import Solver
 
 
-class SimulatedAnnealingAlgorithm(object):
+class SimulatedAnnealingAlgorithm(Solver):
 
     def __init__(self):
+        super().__init__()
         self.shift_name = ['Graveyard', 'Night', 'Day']
         self.sampler = neal.SimulatedAnnealingSampler()
-
-        self.logger = Logger()
 
     def solve(self, **kwargs):
 

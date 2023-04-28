@@ -13,7 +13,7 @@ import json
 import yaml
 import calendar
 
-from console import Logger
+from Solver import Solver
 
 
 with open("config.yml", "r") as f:
@@ -23,10 +23,10 @@ with open("config.yml", "r") as f:
     my_api_key = config["my_api_key"]
 
 
-class QuantumAnnealingAlgorithm(object):
+class QuantumAnnealingAlgorithm(Solver):
 
     def __init__(self):
-        self.logger = Logger()
+        super().__init__()
         pass
 
     def solve(self, **kwargs):

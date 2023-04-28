@@ -2,7 +2,8 @@ import sys
 from PySide6.QtWidgets import QApplication, QMessageBox
 from ui import MainWindow, WorkingArea
 
-from Solver import DAUSolver, SASolver
+from DAUSolver import QuantumAnnealingAlgorithm
+from SASolver import SimulatedAnnealingAlgorithm
 
 import pandas as pd
 import os
@@ -15,9 +16,9 @@ class NSPSolver(WorkingArea):
         super().__init__(name, mode)
 
         if mode == 'DAU':
-            self.solver = DAUSolver()
+            self.solver = QuantumAnnealingAlgorithm()
         elif mode == 'SA':
-            self.solver = SASolver()
+            self.solver = SimulatedAnnealingAlgorithm()
 
         self.form.runbutton.clicked.connect(self.runTrigger)
         self.solver.error.connect(self.errorHandlerSlot)
