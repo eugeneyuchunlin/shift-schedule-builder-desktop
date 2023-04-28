@@ -38,11 +38,7 @@ class QuantumAnnealingAlgorithm(object):
         # my_api_key = "your api key"
 
         per_grave = int(kwargs["per_grave"])
-        per_num = int(kwargs["per_num"])
-        per_night = int(kwargs["per_night"])
         n1 = int(kwargs["n1"])
-        n2 = int(kwargs["n2"])
-        n = int(kwargs["n"])
         k = int(kwargs["k"])
         year = int(kwargs["year"])
         month = int(kwargs["month"])
@@ -103,22 +99,6 @@ class QuantumAnnealingAlgorithm(object):
             if i % 7 == firstSat or i % 7 == firstSun:
                 weekend.append(i)
 
-        # m1, m2: the numbers of nurses on duty each month for graveyard shifts and night shifts
-        # n1, n2: the numbers of nurses on duty per day for graveyard shifts and
-        # night shifts
-
-        # k: the max number of consecutive graveyard shifts and of consecutive
-        # night shifts
-
-        # n: the numbers of nurses on duty each pay
-        # n3: the numbers of nurses on duty per day for day shifts
-        n3 = n - n1 - n2
-
-        # Grouping
-        group = list(range(per_num))
-        graveyard_list = group[:per_grave]
-        night_list = group[per_grave:per_grave + per_night]
-        day_list = group[per_grave + per_night:]
 
         # Graveyard shift
         # Generate Binary table of Graveyard shift
