@@ -131,35 +131,35 @@ class SimulatedAnnealingAlgorithm(object):
 
         data = []
 
-        for i in range(10):
-            start_time = time.process_time()
-            sampleset = self.sampler.sample(
-                bqm, num_reads=10, num_sweeps=num_sweeps)
-            decoded_samples = model.decode_sampleset(sampleset)
-            graveyard_sampleset = min(decoded_samples, key=lambda s: s.energy)
-            graveyard_record = graveyard_sampleset.sample
-            dec = model.decode_sample(graveyard_record, vartype='BINARY')
-            end_time = time.process_time()
-            process_time1 = end_time - start_time
-            energy = dec.energy
-            constraints = dec.constraints()
-            self.logger.log(constraints)
-            constraints1 = {}
-            for key, value in constraints.items():
-                constraints1[key] = value[1]
-            # enter the data
-            data_everytime = [
-                per_grave,
-                n1,
-                len(var),
-                constraints1['weekdayleave'],
-                constraints1['eachshift'],
-                constraints1['kdays'],
-                constraints1['2days'],
-                process_time1,
-                num_sweeps,
-                energy]
-            data.append(data_everytime)
+
+        start_time = time.process_time()
+        sampleset = self.sampler.sample(
+            bqm, num_reads=10, num_sweeps=num_sweeps)
+        decoded_samples = model.decode_sampleset(sampleset)
+        graveyard_sampleset = min(decoded_samples, key=lambda s: s.energy)
+        graveyard_record = graveyard_sampleset.sample
+        dec = model.decode_sample(graveyard_record, vartype='BINARY')
+        end_time = time.process_time()
+        process_time1 = end_time - start_time
+        energy = dec.energy
+        constraints = dec.constraints()
+        self.logger.log(constraints)
+        constraints1 = {}
+        for key, value in constraints.items():
+            constraints1[key] = value[1]
+        # enter the data
+        data_everytime = [
+            per_grave,
+            n1,
+            len(var),
+            constraints1['weekdayleave'],
+            constraints1['eachshift'],
+            constraints1['kdays'],
+            constraints1['2days'],
+            process_time1,
+            num_sweeps,
+            energy]
+        data.append(data_everytime)
 
         # Output the DataFrame
         # Generate the empty shift table and lables
