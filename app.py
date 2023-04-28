@@ -58,7 +58,9 @@ class NSPSolver(WorkingArea):
 
 
 if __name__ == "__main__":
-    os.mkdir('jobs')
+
+    if not os.path.exists('jobs'):
+        os.mkdir('jobs')
 
     app = QApplication(sys.argv)
     win = MainWindow(NSPSolver)  # pass type
