@@ -17,13 +17,13 @@ class SimulatedAnnealingAlgorithm(object):
         self.sampler = neal.SimulatedAnnealingSampler()
 
         self.logger = Logger()
-   
+
     def solve(self, **kwargs):
 
         per_grave = int(kwargs["per_grave"])
         n1 = int(kwargs["n1"])
         k = int(kwargs["k"])
-        num_sweeps = int(kwargs["num_sweeps"]) 
+        num_sweeps = int(kwargs["num_sweeps"])
         year = int(kwargs["year"])
         month = int(kwargs["month"])
         lmda = float(kwargs["lmda"])
@@ -166,7 +166,7 @@ class SimulatedAnnealingAlgorithm(object):
         label = [
             'per_grave',
             'shift_grave',
-            'num_var',     
+            'num_var',
             'weekdayleave',
             'eachshift',
             'kdays',
@@ -188,7 +188,6 @@ class SimulatedAnnealingAlgorithm(object):
         graveyard_table = graveyard_table.reshape(per_grave, days).astype(int)
         graveyard_dic = {
             graveyard_list[i]: graveyard_table[i].tolist() for i in range(per_grave)}
-
 
         self.shift_result = graveyard_table
         self.algorithm_data = data

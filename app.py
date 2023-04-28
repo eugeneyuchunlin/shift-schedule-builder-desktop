@@ -10,7 +10,6 @@ import os
 
 class NSPSolver(WorkingArea):
 
-
     # TODO: enable user to register new solver
     def __init__(self, name, mode):
         super().__init__(name, mode)
@@ -19,7 +18,6 @@ class NSPSolver(WorkingArea):
             self.solver = DAUSolver()
         elif mode == 'SA':
             self.solver = SASolver()
-    
 
         self.form.runbutton.clicked.connect(self.runTrigger)
         self.solver.error.connect(self.errorHandlerSlot)
@@ -37,7 +35,6 @@ class NSPSolver(WorkingArea):
 
         self.form.runbutton.setDisabled(True)
 
-
     def errorHandlerSlot(self, alert_msg):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
@@ -47,14 +44,18 @@ class NSPSolver(WorkingArea):
         msg.addButton(QMessageBox.Ok)
         msg.exec()
 
-        self.form.runbutton.setDisabled(False) 
+        self.form.runbutton.setDisabled(False)
 
-    def finishRunningSlot(self, shift:pd.DataFrame, algorithm_data:pd.DataFrame):
+    def finishRunningSlot(
+            self,
+            shift: pd.DataFrame,
+            algorithm_data: pd.DataFrame):
         # print("finishRunningSlot")
         # print(id(self.table))
         self.table.loadDataFrame(shift)
         self.algorithm_table.loadDataFrame(algorithm_data)
         self.form.runbutton.setDisabled(False)
+
 
 if __name__ == "__main__":
     os.mkdir('jobs')

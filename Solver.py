@@ -4,6 +4,7 @@ from SASolver import SimulatedAnnealingAlgorithm
 
 import pandas as pd
 
+
 class Solver(QThread):
 
     progress = Signal(int)
@@ -14,9 +15,9 @@ class Solver(QThread):
         # self.shift = []
         # for i in range(10):
         #     self.shift.append([0] * 31)
-        
+
         # self.shift = pd.DataFrame(self.shift, columns=[str(i) for i in range(1, 32)])
-        
+
         # self.algorithm_data = []
         # self.algorithm_data = pd.read_csv('.\Graveyard_shift.csv')
 
@@ -42,7 +43,6 @@ class DAUSolver(Solver, QuantumAnnealingAlgorithm):
             self.error.emit(str(e))
             return
         self.finished.emit(self.shift, self.algorithm_data)
-
 
 
 class SASolver(Solver, SimulatedAnnealingAlgorithm):

@@ -23,7 +23,6 @@ with open("config.yml", "r") as f:
     my_api_key = config["my_api_key"]
 
 
-
 class QuantumAnnealingAlgorithm(object):
 
     def __init__(self):
@@ -54,7 +53,6 @@ class QuantumAnnealingAlgorithm(object):
         lmde = float(kwargs["lmde"])
         time_limit_sec = int(kwargs["time_limit_sec"])
         penalty_coef = int(kwargs["penalty_coef"])
-
 
         url = "https://api.aispf.global.fujitsu.com"
 
@@ -308,7 +306,6 @@ class QuantumAnnealingAlgorithm(object):
                 solution_dict[i] = 0
         decoded_sample2 = model.decode_sample(solution_dict, vartype='BINARY')
 
-
         graveyard_list = list(range(per_grave))
         graveyard_table = np.zeros(per_grave * days)
         for key, value in solution_dict.items():
@@ -318,14 +315,14 @@ class QuantumAnnealingAlgorithm(object):
         graveyard_table = graveyard_table.reshape(per_grave, days).astype(int)
         graveyard_dic = {graveyard_list[i]: graveyard_table[i].tolist()
                          for i in range(per_grave)}
-        
+
         constraints = decoded_sample2.constraints()
         self.logger.log(constraints)
         constraints1 = {}
         for key, value in constraints.items():
             constraints1[key] = value[1]
         pyqubo_energy = decoded_sample2.energy
-        
+
         # 儲存的資料夾
         with open('./jobs/result' + job_id + '.json', 'w') as f:
             # json.dump(json.dumps(problem_body, default=int), f, indent=4)
@@ -385,7 +382,6 @@ class QuantumAnnealingAlgorithm(object):
                 json.dump(json.loads(json.dumps(job_txt)), f, indent=4)
                 json.dump(solution.json(), f, indent=4)
 
-
         data = {
             "job_id": [job_id],
             "per_grave": [per_grave],
@@ -398,7 +394,7 @@ class QuantumAnnealingAlgorithm(object):
             "solve_energy": [solve_energy],
             "offest": [offset],
             "energy+offest": [solve_energy + offset],
-            "pyqubo_energy": [pyqubo_energy]
+            "pyqubo_energy": [pyqubo_energy],
             "solve_time": [solve_time],
         }
 
@@ -406,5 +402,3 @@ class QuantumAnnealingAlgorithm(object):
             graveyard_table, columns=[
                 str(i) for i in range(
                     1, days + 1)]), pd.DataFrame(data)
-
-
