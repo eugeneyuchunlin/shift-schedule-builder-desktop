@@ -152,13 +152,13 @@ class SimulatedAnnealingAlgorithm(object):
                 per_grave,
                 n1,
                 len(var),
-                energy,
                 constraints1['weekdayleave'],
                 constraints1['eachshift'],
                 constraints1['kdays'],
                 constraints1['2days'],
                 process_time1,
-                num_sweeps]
+                num_sweeps,
+                energy]
             data.append(data_everytime)
 
         # Output the DataFrame
@@ -166,14 +166,14 @@ class SimulatedAnnealingAlgorithm(object):
         label = [
             'per_grave',
             'shift_grave',
-            'num_var',
-            'energy',
+            'num_var',     
             'weekdayleave',
             'eachshift',
             'kdays',
             '2days',
             'process_time',
-            'num_sweeps']
+            'num_sweeps',
+            'energy']
         df = pd.DataFrame(data, columns=label)
         df = df.applymap(str)
         # filename = 'Graveyard_shift.csv'
@@ -189,7 +189,6 @@ class SimulatedAnnealingAlgorithm(object):
         graveyard_dic = {
             graveyard_list[i]: graveyard_table[i].tolist() for i in range(per_grave)}
 
-        self.logger.log(graveyard_table)
 
         self.shift_result = graveyard_table
         self.algorithm_data = data
