@@ -307,9 +307,7 @@ class QuantumAnnealingAlgorithm(object):
             else:
                 solution_dict[i] = 0
         decoded_sample2 = model.decode_sample(solution_dict, vartype='BINARY')
-        self.logger.log(type(decoded_sample2))
-        self.logger.log(decoded_sample2.energy, decoded_sample2.constraints())
-        self.logger.log(solution_dict)
+
 
         graveyard_list = list(range(per_grave))
         graveyard_table = np.zeros(per_grave * days)
@@ -320,10 +318,15 @@ class QuantumAnnealingAlgorithm(object):
         graveyard_table = graveyard_table.reshape(per_grave, days).astype(int)
         graveyard_dic = {graveyard_list[i]: graveyard_table[i].tolist()
                          for i in range(per_grave)}
-
-        self.logger.log(graveyard_table)
-
-        # 下面的google drive路徑要自己改成你想要儲存的資料夾
+        
+        constraints = decoded_sample2.constraints()
+        self.logger.log(constraints)
+        constraints1 = {}
+        for key, value in constraints.items():
+            constraints1[key] = value[1]
+        pyqubo_energy = decoded_sample2.energy
+        
+        # 儲存的資料夾
         with open('./jobs/result' + job_id + '.json', 'w') as f:
             # json.dump(json.dumps(problem_body, default=int), f, indent=4)
             json.dump(solution.json(), f, indent=4)
@@ -382,29 +385,20 @@ class QuantumAnnealingAlgorithm(object):
                 json.dump(json.loads(json.dumps(job_txt)), f, indent=4)
                 json.dump(solution.json(), f, indent=4)
 
-        data = [
-            per_grave,
-            n1,
-            k,
-            year,
-            month,
-            lmda,
-            lmdb,
-            lmdc,
-            lmdd,
-            lmde,
-            solve_time,
-            solve_energy +
-            offset]
 
         data = {
             "job_id": [job_id],
             "per_grave": [per_grave],
-            "n1": [n1],
-            "k": [k],
+            "shift_grave": [n1],
+            'num_var': [len(var)],
+            'weekdayleave': [constraints1['weekdayleave']],
+            'eachshift': [constraints1['eachshift']],
+            'kdays': constraints1['kdays'],
+            '2days': constraints1['2days'],
             "solve_energy": [solve_energy],
             "offest": [offset],
             "energy+offest": [solve_energy + offset],
+            "pyqubo_energy": [pyqubo_energy]
             "solve_time": [solve_time],
         }
 
