@@ -1,16 +1,14 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMessageBox
-from PySide6.QtCore import Signal
 from ui import MainWindow, WorkingArea
 
 from Solver import DAUSolver, SASolver
 
 import pandas as pd
-import threading
+import os
 
 
 class NSPSolver(WorkingArea):
-
 
 
     # TODO: enable user to register new solver
@@ -59,6 +57,8 @@ class NSPSolver(WorkingArea):
         self.form.runbutton.setDisabled(False)
 
 if __name__ == "__main__":
+    os.mkdir('jobs')
+
     app = QApplication(sys.argv)
     win = MainWindow(NSPSolver)  # pass type
     win.show()
