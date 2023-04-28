@@ -1,10 +1,6 @@
 DAU_FORM_CONFIG = {
     "per_grave": "10",
-    "per_num": "13",
-    "per_night": "3",
     "n1": "7",
-    "n2": "2",
-    "n": "7",
     "k": "5",
     "year": "2022",
     "month": "9",
