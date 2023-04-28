@@ -264,7 +264,7 @@ class QuantumAnnealingAlgorithm(Solver):
                 url + "/da/v3/async/jobs/result/" + job_id,
                 headers=solution_header)
             self.logger.log(solution.json()['status'] + "...")
-            time.sleep(5)
+            time.sleep(30)
 
         if solution.json()["qubo_solution"]["result_status"]:
             self.logger.log(solution.json()["qubo_solution"]["result_status"])
