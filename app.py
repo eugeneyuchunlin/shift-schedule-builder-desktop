@@ -19,7 +19,8 @@ class NSPSolver(WorkingArea):
             self.solver = QuantumAnnealingAlgorithm()
         elif mode == 'SA':
             self.solver = SimulatedAnnealingAlgorithm()
-
+    
+        # Connect the signals and slots, especially for triggers
         self.form.runbutton.clicked.connect(self.runTrigger)
         self.solver.error.connect(self.errorHandlerSlot)
 
@@ -56,6 +57,14 @@ class NSPSolver(WorkingArea):
         self.table.loadDataFrame(shift)
         self.algorithm_table.loadDataFrame(algorithm_data)
         self.form.runbutton.setDisabled(False)
+
+        # Enable user to select solution
+        self.form.index_of_solution_edit.editingFinished.connect(self.indexOfSolutionTrigger)
+
+
+    def indexOfSolutionTrigger(self):
+        index = int(self.form.index_of_solution_edit.text())
+        self.table.loadDataFrame(self.solver.transformSolutionToTable(index))
 
 
 if __name__ == "__main__":
