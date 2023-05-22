@@ -9,6 +9,12 @@ DAU_FORM_CONFIG = {
     "lmdc": "0.5",
     "lmdd": "0.1",
     "lmde": "0.5",
+    "num_run" : "16",
+    "num_group" : "1",
+    "num_output_solution" : "5",
+    "gs_level" : "5",
+    "gs_cutoff" : "8000",
+    "index_of_solution" : "0",
     "time_limit_sec": "120",
     "penalty_coef": "10000",
 }
@@ -25,4 +31,6 @@ SA_FORM_CONFIG = {
     "lmdc": "0.5",
     "lmdd": "0.1",
     "lmde": "0.5",
+    "index_of_solution" : "0",
+    "number_of_runs" : "10"
 }

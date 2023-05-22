@@ -30,6 +30,7 @@ class SimulatedAnnealingAlgorithm(Solver):
         lmdc = float(kwargs["lmdc"])
         lmdd = float(kwargs["lmdd"])
         lmde = float(kwargs["lmde"])
+        number_of_runs = int(kwargs["number_of_runs"])
 
         days = calendar.monthrange(year, month)[1]
         weekend = getWeekendDate(year, month)
@@ -128,37 +129,29 @@ class SimulatedAnnealingAlgorithm(Solver):
         var = model.variables
         self.logger.log(len(var))
 
+        solutions = []
         data = []
+        for i in range(number_of_runs):
+            start_time = time.process_time()
+            sampleset = self.sampler.sample(bqm, num_reads=10, num_sweeps=num_sweeps)
+            decoded_samples = model.decode_sampleset(sampleset)
+            graveyard_sampleset = min(decoded_samples, key=lambda s: s.energy)
+            graveyard_record = graveyard_sampleset.sample
+            dec = model.decode_sample(graveyard_record, vartype='BINARY')
+            end_time = time.process_time()
+            process_time1 = end_time - start_time
+            energy = dec.energy
+            constraints = dec.constraints()
+            self.logger.log(constraints)
+            constraints1 = {}
+            for key, value in constraints.items():
+                constraints1[key] = value[1]
+            # enter the data
+            data_everytime=[per_grave, n1, len(var), energy, constraints1['weekdayleave'], constraints1['eachshift'], 
+                            constraints1['kdays'], constraints1['2days'], process_time1, num_sweeps]
+            data.append(data_everytime)
+            solutions.append(graveyard_record)
 
-
-        start_time = time.process_time()
-        sampleset = self.sampler.sample(
-            bqm, num_reads=10, num_sweeps=num_sweeps)
-        decoded_samples = model.decode_sampleset(sampleset)
-        graveyard_sampleset = min(decoded_samples, key=lambda s: s.energy)
-        graveyard_record = graveyard_sampleset.sample
-        dec = model.decode_sample(graveyard_record, vartype='BINARY')
-        end_time = time.process_time()
-        process_time1 = end_time - start_time
-        energy = dec.energy
-        constraints = dec.constraints()
-        self.logger.log(constraints)
-        constraints1 = {}
-        for key, value in constraints.items():
-            constraints1[key] = value[1]
-        # enter the data
-        data_everytime = [
-            per_grave,
-            n1,
-            len(var),
-            constraints1['weekdayleave'],
-            constraints1['eachshift'],
-            constraints1['kdays'],
-            constraints1['2days'],
-            process_time1,
-            num_sweeps,
-            energy]
-        data.append(data_everytime)
 
         # Output the DataFrame
         # Generate the empty shift table and lables
@@ -178,20 +171,4 @@ class SimulatedAnnealingAlgorithm(Solver):
         # filename = 'Graveyard_shift.csv'
         # df.to_csv(filename, index=False, quoting=csv.QUOTE_NONNUMERIC)
 
-        graveyard_list = list(range(per_grave))
-        graveyard_table = np.zeros(per_grave * days)
-        for key, value in graveyard_record.items():
-            if "Graveyard" in key and "*" not in key:
-                newkey = int(key.replace("Graveyard[", "").replace("]", ""))
-                graveyard_table[newkey] = value
-        graveyard_table = graveyard_table.reshape(per_grave, days).astype(int)
-        graveyard_dic = {
-            graveyard_list[i]: graveyard_table[i].tolist() for i in range(per_grave)}
-
-        self.shift_result = graveyard_table
-        self.algorithm_data = data
-
-        return pd.DataFrame(
-            graveyard_table, columns=[
-                str(i) for i in range(
-                    1, days + 1)]), df
+        return solutions, df

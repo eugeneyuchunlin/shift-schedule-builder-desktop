@@ -52,34 +52,6 @@ class QuantumAnnealingAlgorithm(Solver):
 
         url = "https://api.aispf.global.fujitsu.com"
 
-        request_body = {
-            "grant_type": "client_credentials"
-        }
-
-        # Encode client_id and client_secret in Base64 for Authorization header
-        client_str = client_id + ":" + client_secret
-        client_b64 = base64.b64encode(
-            client_str.encode('utf-8')).decode('utf-8')
-
-        # Define headers with required Content-Type and Accept headers
-        headers = {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Accept": "application/json",
-            "Authorization": "Basic " + client_b64
-        }
-
-        # Send POST request to API with request_body, headers
-        response = requests.post(
-            url + "/auth/v2/tokens",
-            headers=headers,
-            data=request_body)  # , auth=(client_id, client_secret))
-
-        # Extract token from API response and store in JSON file
-        token = response.json()['access_token']
-
-        # Put the token in the later query
-        self.logger.log(token)
-
         # setup
 
         # Kinds of shift
@@ -221,6 +193,11 @@ class QuantumAnnealingAlgorithm(Solver):
         DA_Solver = {}
         DA_Solver["time_limit_sec"] = time_limit_sec
         DA_Solver["penalty_coef"] = penalty_coef
+        DA_Solver['num_run'] = int(kwargs['num_run'])
+        DA_Solver['num_group'] = int(kwargs['num_group'])
+        DA_Solver['num_output_solution'] = int(kwargs['num_output_solution'])
+        DA_Solver['gs_level'] = int(kwargs['gs_level'])
+        DA_Solver['gs_cutoff'] = int(kwargs['gs_cutoff'])
         problem_body["fujitsuDA3"] = DA_Solver
         problem_body["binary_polynomial"] = bin_poly
 
@@ -272,36 +249,50 @@ class QuantumAnnealingAlgorithm(Solver):
             self.logger.log("FALSE")
 
         solve_time = solution.json()["qubo_solution"]["timing"]["solve_time"]
-        solve_energy = solution.json(
-        )["qubo_solution"]["solutions"][0]["energy"]
-        self.logger.log(solve_time, solve_energy + offset)
 
-        solution_set = solution.json()["qubo_solution"]["solutions"][0]
-        solution_configuration = solution_set['configuration']
-        solution_dict = {}
-        for i in var:
-            if solution_configuration[str(var.index(i))]:
-                solution_dict[i] = 1
-            else:
-                solution_dict[i] = 0
-        decoded_sample2 = model.decode_sample(solution_dict, vartype='BINARY')
+        data = []
+        solutions = []
+        qubo_solution = solution.json()['qubo_solution']
+        for i in range(len(qubo_solution['solutions'])):
+            configuration = qubo_solution['solutions'][i]['configuration']
+            solution_dict = {}
+            for j in var:
+                if configuration[str(var.index(j))]:
+                    solution_dict[j] = 1
+                else:
+                    solution_dict[j] = 0
+            dec = model.decode_sample(solution_dict, vartype='BINARY')
+            constraints = dec.constraints()
+            self.logger.log(constraints)
+            constraints1 = {}
+            for key, value in constraints.items():
+                constraints1[key] = value[1]
+            pyqubo_energy = dec.energy                
 
-        graveyard_list = list(range(per_grave))
-        graveyard_table = np.zeros(per_grave * days)
-        for key, value in solution_dict.items():
-            if "Graveyard" in key and "*" not in key:
-                newkey = int(key.replace("Graveyard[", "").replace("]", ""))
-                graveyard_table[newkey] = value
-        graveyard_table = graveyard_table.reshape(per_grave, days).astype(int)
-        graveyard_dic = {graveyard_list[i]: graveyard_table[i].tolist()
-                         for i in range(per_grave)}
-
-        constraints = decoded_sample2.constraints()
-        self.logger.log(constraints)
-        constraints1 = {}
-        for key, value in constraints.items():
-            constraints1[key] = value[1]
-        pyqubo_energy = decoded_sample2.energy
+            solve_energy = qubo_solution["solutions"][i]["energy"]
+            self.logger.log(solve_time, solve_energy + offset)
+            instance = {
+                "job_id" : job_id,
+                "per_grave": per_grave,
+                "shift_grave": n1,
+                'num_var': len(var),
+                'weekdayleave': constraints1['weekdayleave'],
+                'eachshift': constraints1['eachshift'],
+                'kdays': constraints1['kdays'],
+                '2days': constraints1['2days'],
+                "solve_energy": solve_energy,
+                "offest": offset,
+                "energy+offest": solve_energy + offset,
+                "pyqubo_energy": pyqubo_energy,
+                "solve_time": solve_time,
+                "time_limit_sec": time_limit_sec,
+                "penalty_coef": penalty_coef,
+                "gs_level" : int(kwargs['gs_level']),
+                "gs_cutoff" : int(kwargs['gs_cutoff']),
+            } 
+            data.append(instance)
+            solutions.append(solution_dict)
+        
 
         # 儲存的資料夾
         with open('./jobs/result' + job_id + '.json', 'w') as f:
@@ -313,72 +304,7 @@ class QuantumAnnealingAlgorithm(Solver):
         response_delete = requests.delete(
             url + "/da/v3/async/jobs/result/" + job_id,
             headers=solution_header)
-        # print(response_delete.json())
+        # self.logger.log(response_delete.json())
         self.logger.log(job_id + " is deleted")
 
-        # If you want to list all the jobs, use the following
-        # Please delete the job if the job is finished and you had downloaded
-        # the result
-
-        job_list = requests.get(
-            url + "/da/v3/async/jobs",
-            headers=problem_header)
-        self.logger.log(job_list.json())
-
-        # Save the results in job list
-        response_dict = json.loads(json.dumps(job_list.json()))
-
-        # 設定台灣時區
-        tz = timezone('Asia/Taipei')
-
-        # 遍歷物件取出資料
-        for job_status in response_dict['job_status_list']:
-            job_id = job_status['job_id']
-            status = job_status['job_status']
-            start_time_utc = datetime.strptime(
-                job_status['start_time'], '%Y-%m-%dT%H:%M:%SZ')
-            start_time_tw = start_time_utc.astimezone(tz)
-            self.logger.log('Job ID:', job_id)
-            self.logger.log('Job Status:', status)
-            # print('Start Time (UTC):', start_time_utc)
-            self.logger.log('Start Time (TW):', start_time_tw)
-            self.logger.log()  # 空行分隔
-            job_txt = {
-                'Job ID': job_id,
-                'Job Status': status,
-                'Start Time': job_status['start_time']
-            }
-            # output solution as a file
-            solution_header = {
-                "Job_ID": job_id,
-                "Accept": "application/json",
-                # "X-Access-Token": token
-                "X-Api-Key": my_api_key
-            }
-            solution = requests.get(
-                url + "/da/v3/async/jobs/result/" + job_id,
-                headers=solution_header)
-            with open('./jobs/result' + job_id + '.json', 'w') as f:
-                json.dump(json.loads(json.dumps(job_txt)), f, indent=4)
-                json.dump(solution.json(), f, indent=4)
-
-        data = {
-            "job_id": [job_id],
-            "per_grave": [per_grave],
-            "shift_grave": [n1],
-            'num_var': [len(var)],
-            'weekdayleave': [constraints1['weekdayleave']],
-            'eachshift': [constraints1['eachshift']],
-            'kdays': constraints1['kdays'],
-            '2days': constraints1['2days'],
-            "solve_energy": [solve_energy],
-            "offest": [offset],
-            "energy+offest": [solve_energy + offset],
-            "pyqubo_energy": [pyqubo_energy],
-            "solve_time": [solve_time],
-        }
-
-        return pd.DataFrame(
-            graveyard_table, columns=[
-                str(i) for i in range(
-                    1, days + 1)]), pd.DataFrame(data)
+        return solutions, pd.DataFrame(data)
