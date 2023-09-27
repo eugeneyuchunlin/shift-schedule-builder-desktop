@@ -1,6 +1,7 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMessageBox
-from src.ui.ui import MainWindow, WorkingArea
+from src.ui.ui import MainWindow
+from src.ui.working_area import WorkingArea
 
 from src.algorithms.DAUSolver import QuantumAnnealingAlgorithm
 from src.algorithms.SASolver import SimulatedAnnealingAlgorithm
@@ -12,14 +13,14 @@ import os
 class NSPSolver(WorkingArea):
 
     # TODO: enable user to register new solver
-    def __init__(self, name, mode):
-        super().__init__(name, mode)
+    def __init__(self, name):
+        super().__init__(name)
 
-        if mode == 'DAU':
-            self.solver = QuantumAnnealingAlgorithm()
-        elif mode == 'SA':
-            self.solver = SimulatedAnnealingAlgorithm()
-    
+        # if mode == 'DAU':
+        #     self.solver = QuantumAnnealingAlgorithm()
+        # elif mode == 'SA':
+        #     self.solver = SimulatedAnnealingAlgorithm()
+        self.solver = QuantumAnnealingAlgorithm() 
         # Connect the signals and slots, especially for triggers
         self.form.runbutton.clicked.connect(self.runTrigger)
         self.solver.error.connect(self.errorHandlerSlot)
