@@ -30,7 +30,7 @@ class ShiftTable(TableWidget):
         """
         super().__init__()
 
-    def createShiftTable(self, number_of_people: int, year: int, month: int):
+    def createShiftTable(self, number_of_people: int, **kwargs):
         """
         This method creates an empty shift table
 
@@ -43,7 +43,13 @@ class ShiftTable(TableWidget):
             month: the month of this shift table
         """
         # FIXME handle the exception of monthrange
-        days = calendar.monthrange(year, month)[1]
+        if('days' not in kwargs) and ('year' not in kwargs or 'month' not in kwargs):
+            raise Exception('you have to give either days or year and month to the function')
+        
+        if('days' in kwargs):
+            days = kwargs['days']
+        else:
+            days = calendar.monthrange(kwargs['year'], kwargs['month'])[1]
 
         self.setRowCount(number_of_people)
         self.setColumnCount(days)

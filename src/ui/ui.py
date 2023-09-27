@@ -5,11 +5,12 @@ from PySide6.QtWidgets import (
     QTabWidget, QTableWidget, QMenu,
     QVBoxLayout, QLabel, QLineEdit,
     QGridLayout, QFormLayout, QTableWidgetItem,
+    QHBoxLayout,
     QTextEdit, QFileDialog, QDialog, QComboBox
 )
 from PySide6.QtGui import QAction
 import pandas as pd
-from parameters import SA_FORM_CONFIG, DAU_FORM_CONFIG
+from .parameters import SA_FORM_CONFIG, DAU_FORM_CONFIG
 from ..utility.util import getFileName
 
 # Important:
@@ -20,6 +21,7 @@ from .ui_form import Ui_MainWindow
 
 import calendar
 
+from src.ui.login import LoginDialog
 from src.ui.table_widget import TableWidget
 from src.ui.shift_table import ShiftTable
 
@@ -77,22 +79,18 @@ class ParametersForm(QWidget):
         """
         formlayout = QFormLayout()
 
-        for key in self.parameters_fields:
-            setattr(self, key + "_label", QLabel(key))
-            setattr(
-                self,
-                key + "_edit",
-                QLineEdit(
-                    self.parameters_fields[key]))
-            formlayout.addRow(
-                getattr(
-                    self,
-                    key +
-                    "_label"),
-                getattr(
-                    self,
-                    key +
-                    "_edit"))
+        self._days_key = QLabel("Days")
+        self._days_edit = QLineEdit("30")
+        formlayout.addRow(self._days_key, self._days_edit)
+
+        self._number_of_workers = QLabel("Number of workers")
+        self._number_of_workers_edit = QLineEdit("8")
+        formlayout.addRow(self._number_of_workers, self._number_of_workers_edit)
+
+        self._computation_time = QLabel("Computation time")
+        self._computation_time_edit = QLineEdit("100")
+        formlayout.addRow(self._computation_time, self._computation_time_edit)
+
 
         self.runbutton = QPushButton("Run")
         formlayout.addRow(self.runbutton)
@@ -203,10 +201,9 @@ class WorkingArea(QWidget):
         self.form = ParametersForm(self.running_mode)
 
         # connect the signal of edit fields
-        self.form.per_grave_edit.editingFinished.connect(
+        self.form._number_of_workers_edit.editingFinished.connect(
             self.generateEmptyShift)
-        self.form.year_edit.editingFinished.connect(self.generateEmptyShift)
-        self.form.month_edit.editingFinished.connect(self.generateEmptyShift)
+        self.form._days_edit.editingFinished.connect(self.generateEmptyShift)
 
         self.generateEmptyShift()
 
@@ -215,13 +212,10 @@ class WorkingArea(QWidget):
         self.log = QTextEdit()
         self.log.setReadOnly(True)
 
-        layout.setColumnStretch(0, 2)
-        layout.setRowStretch(1, 2)
-        layout.setRowStretch(2, 1)
-        layout.addWidget(self.form, 0, 1)
-        layout.addWidget(self.table, 0, 0)
-        layout.addWidget(self.algorithm_table, 1, 0)
-        layout.addWidget(self.log, 2, 0)
+        layout.addWidget(self.table, 0, 0, 3, 1)
+        layout.addWidget(self.form, 0, 1, 2, 2)
+        # layout.addWidget(self.algorithm_table, 1, 0)
+        # layout.addWidget(self.log, 2, 0)
 
         self.setLayout(layout)
 
@@ -235,24 +229,18 @@ class WorkingArea(QWidget):
         """
 
         # FIXME: The method should should the data
-        year = self.form.year_edit.text()
-        month = self.form.month_edit.text()
-        number_of_people = self.form.per_grave_edit.text()
-
-        if year.isdigit() and len(year) > 0:
-            year = int(year)
-        else:
-            return
-        if month.isdigit() and len(month) > 0:
-            month = int(month)
-        else:
-            return
+        number_of_people = self.form._number_of_workers_edit.text()
+        number_of_days = self.form._days_edit.text()
+        
         if number_of_people.isdigit() and len(number_of_people) > 0:
             number_of_people = int(number_of_people)
         else:
             return
 
-        self.table.createShiftTable(number_of_people, year, month)
+        if number_of_days.isdigit() and len(number_of_days) > 0:
+            number_of_days = int(number_of_days)
+
+        self.table.createShiftTable(number_of_people, days=number_of_days)
 
 
 class Tabs(QWidget):
@@ -436,6 +424,8 @@ class MainWindow(QMainWindow):
         saveMenu.addActions([save_all_action, save_action])
         fileMenu.addMenu(saveMenu)
         fileMenu.addActions([seperator_action, export])
+
+        # insert the login dialog here
 
         self.configuration = Tabs(
             Configuration, self.chooseRunningModeDialog())
