@@ -10,130 +10,19 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QAction
 import pandas as pd
 from parameters import SA_FORM_CONFIG, DAU_FORM_CONFIG
-from util import getFileName
+from ..utility.util import getFileName
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
 #     pyside6-uic form.ui -o ui_form.py, or
 #     pyside2-uic form.ui -o ui_form.py
-from ui_form import Ui_MainWindow
+from .ui_form import Ui_MainWindow
 
 import calendar
 
+from src.ui.table_widget import TableWidget
+from src.ui.shift_table import ShiftTable
 
-class TableWidget(QTableWidget):
-    """
-    This class is used to create a table widget
-
-    TableWidget is a subclass of QTableWidget class and it provides the following methods:
-        - exportTableToDataFrame: export the table to a pandas dataframe
-        - loadDataFrame: load the data from a pandas dataframe to the table
-    """
-
-    def __init__(self):
-        """
-        This is the constructor of the TableWidget class
-
-        It calls the constructor of the QTableWidget class and it takes no arguments
-        """
-        super().__init__()
-
-    def exportTableToDataFrame(self) -> pd.DataFrame:
-        """
-        This method exports the table to a pandas dataframe
-
-        You can use this method to export the table to a pandas dataframe
-
-        Returns:
-            A pandas dataframe
-        """
-        horizontal_headers = []
-
-        data = {}
-        for i in range(self.columnCount()):
-            key = self.horizontalHeaderItem(i).text()
-            horizontal_headers.append(key)
-            data[key] = []
-            for j in range(self.rowCount()):
-                data[key].append(self.item(j, i).text())
-
-        return pd.DataFrame(data)
-
-    def loadDataFrame(self, df: pd.DataFrame):
-        """
-        This method loads the data from a pandas dataframe to the table
-
-        You can use this method to load the data from a pandas dataframe to the table.
-        The function will automatically set the number of rows and columns of the table and set the horizontal header labels.
-
-        Args:
-            df: a pandas dataframe
-        """
-
-        self.setRowCount(df.shape[0])
-        self.setColumnCount(df.shape[1])
-
-        self.setHorizontalHeaderLabels(df.columns)
-
-        for i in range(df.shape[0]):
-            for j in range(df.shape[1]):
-                item = QTableWidgetItem(str(df.iloc[i][j]))
-                self.setItem(i, j, item)
-
-        self.resizeColumnsToContents()
-
-
-class ShiftTable(TableWidget):
-    """
-    This class is used to create a shift table.
-
-    ShiftTable is a subclass of TableWidget class and it provides the following methods:
-        - createShiftTable: create an empty shift table
-    """
-
-    # TODO: remove the empty_table argument
-    def __init__(
-            self,
-            empty_table=True,
-            number_of_rows=None,
-            year=None,
-            month=None):
-        """
-        This is the constructor of the ShiftTable class. It calls the constructor of the TableWidget class.
-        You can specify whether the class should create an empty table or not by setting the empty_table argument.
-        The number of days of the shift table depends on the year and month arguments.
-
-        Args:
-            empty_table: a boolean value to indicate whether the class should create an empty
-                table or not. The default value is True.
-            number_of_rows: the number of rows of the table
-            year: the year of this shift table
-            month: the month of this shift table
-        """
-        super().__init__()
-
-    def createShiftTable(self, number_of_people: int, year: int, month: int):
-        """
-        This method creates an empty shift table
-
-        You can use this method to create an empty shift table. The number of days of the shift table depends on the year and month arguments.
-        The number of rows of the shift table depends on the number_of_people argument.
-
-        Args:
-            number_of_people: the number of people
-            year: the year of this shift table
-            month: the month of this shift table
-        """
-        # FIXME handle the exception of monthrange
-        days = calendar.monthrange(year, month)[1]
-
-        self.setRowCount(number_of_people)
-        self.setColumnCount(days)
-        self.setHorizontalHeaderLabels([str(i) for i in range(1, days + 1)])
-        self.setVerticalHeaderLabels(
-            [str(i) for i in range(1, number_of_people + 1)])
-
-        self.resizeColumnsToContents()
 
 
 class AlgorithmData(TableWidget):

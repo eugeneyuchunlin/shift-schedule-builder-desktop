@@ -1,9 +1,9 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMessageBox
-from ui import MainWindow, WorkingArea
+from src.ui.ui import MainWindow, WorkingArea
 
-from DAUSolver import QuantumAnnealingAlgorithm
-from SASolver import SimulatedAnnealingAlgorithm
+from src.algorithms.DAUSolver import QuantumAnnealingAlgorithm
+from src.algorithms.SASolver import SimulatedAnnealingAlgorithm
 
 import pandas as pd
 import os

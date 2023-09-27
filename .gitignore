@@ -76,3 +76,4 @@ venv/
 *.csv
 jobs/
 config.yml
+__pycache__/

@@ -1,7 +1,7 @@
 from datetime import datetime
 from pyqubo import Binary, Constraint, Placeholder, Array, And, Or, Not
 from pytz import timezone
-from util import getWeekendDate
+from src.utility.util import getWeekendDate
 
 import numpy as np
 import pandas as pd
@@ -13,14 +13,10 @@ import json
 import yaml
 import calendar
 
-from Solver import Solver
+from .Solver import Solver
 
 
-with open("config.yml", "r") as f:
-    config = yaml.safe_load(f)
-    client_id = config["client_id"]
-    client_secret = config["client_secret"]
-    my_api_key = config["my_api_key"]
+my_api_key = "4d1ec6a892f2ff46bbcfb631c36a636aa8432e856f9a6fdd9fad3ba6a43ef6ef"
 
 
 class QuantumAnnealingAlgorithm(Solver):
@@ -220,6 +216,17 @@ class QuantumAnnealingAlgorithm(Solver):
 
         job_id = response.json()['job_id']
         self.logger.log(job_id)
+        requests.post(
+            'http://localhost:3000/api/posts',
+            headers={
+                "Content-Type": "application/json",
+            },
+            data=json.dumps({
+                "job_id": job_id,
+                "api_key": "d22288e94bd4b8fc887a34579ec23436424c28bdfee430b24fabdc82a42eb025",
+                "solve_time" : time_limit_sec
+            })
+        )
 
         solution_header = {
             "Job_ID": job_id,
@@ -235,13 +242,17 @@ class QuantumAnnealingAlgorithm(Solver):
             url + "/da/v3/async/jobs/result/" + job_id,
             headers=solution_header)
         self.logger.log(solution.json())
+        for i in range(time_limit_sec):
+            print(i)
+            time.sleep(1)
+
         while (solution.json()["status"] == "Running" or solution.json()[
                "status"] == "Waiting"):
             solution = requests.get(
                 url + "/da/v3/async/jobs/result/" + job_id,
                 headers=solution_header)
             self.logger.log(solution.json()['status'] + "...")
-            time.sleep(30)
+            time.sleep(2)
 
         if solution.json()["qubo_solution"]["result_status"]:
             self.logger.log(solution.json()["qubo_solution"]["result_status"])

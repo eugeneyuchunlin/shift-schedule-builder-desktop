@@ -1,5 +1,5 @@
 from pyqubo import Constraint, Array, And, Or, Not
-from util import getWeekendDate
+from src.utility.util import getWeekendDate
 
 import numpy as np
 import pandas as pd
@@ -7,7 +7,7 @@ import pandas as pd
 import neal
 import time
 import calendar
-from Solver import Solver
+from .Solver import Solver
 
 
 class SimulatedAnnealingAlgorithm(Solver):
