@@ -33,10 +33,10 @@ class NSPSolver(WorkingArea):
     def runTrigger(self):
         parameters = self.form.parameters()
         print(parameters)
-        self.solver.setParameters(**parameters)
-        self.solver.start()
+        # self.solver.setParameters(**parameters)
+        # self.solver.start()
 
-        self.form.runbutton.setDisabled(True)
+        # self.form.runbutton.setDisabled(True)
 
     def errorHandlerSlot(self, alert_msg):
         msg = QMessageBox()

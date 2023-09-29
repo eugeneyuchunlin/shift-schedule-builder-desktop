@@ -2,52 +2,86 @@ import pandas as pd
 from PySide6.QtWidgets import (
     QWidget, QFormLayout, QLineEdit, 
     QLabel, QPushButton, QComboBox,
-    QDialog,
+    QDialog, QHBoxLayout
 )
 
 
-class ShiftRequirementTag(QPushButton):
+class ShiftRequirementTagBase(QWidget):
     
-    def __init__(self, text):
+    def __init__(self, text, name):
         super().__init__()
-        self.setText(text)
-
-    def openDialog(self):
-        self.exec()
-        pass
-
-class WorkingDays(QDialog):
-
-    def __init__(self, text):
-        super().__init__()
-        
-        self.setWindowTitle(text)
+        self.name = name
+        self.dialog = ShiftRequirementBase(text)
 
         self.layout = QFormLayout()
-        
-        self.text = QLabel("Expected Number of Working Days")
-        self.edit = QLineEdit()
-        self.layout.addRow(self.text, self.edit)
+        self.btn = QPushButton(text)
+        self.btn.clicked.connect(self.openDialog)
+        self.layout.addRow(self.btn)
+        self.setLayout(self.layout)
 
+    def openDialog(self):
+        self.dialog.exec()
+        pass
+
+    def getParameters(self):
+        return {
+            "name": self.name,
+            'parameters' : self.dialog.getParameters()
+        }
+
+class ShiftRequirementTagWithWeight(ShiftRequirementTagBase):
+    def __init__(self, text, name):
+        super().__init__(text, name)
+        self.dialog = ShiftRequirementWithWeight(text)
+
+class ShiftRequirementTagWithWeightAndParam(ShiftRequirementTagBase):
+    def __init__(self, text, name, param_name):
+        super().__init__(text, name)
+        self.dialog = ShiftRequirementWithWeightAndParam(text, param_name)
+
+
+class ShiftRequirementBase(QDialog):
+
+    def __init__(self, title):
+        super().__init__()
+        self.setWindowTitle(title)
+        
+        self.layout = QFormLayout()
         self.weight_text = QLabel("Weight")
         self.weight_edit = QLineEdit()
         self.layout.addRow(self.weight_text, self.weight_edit)
-
         self.setLayout(self.layout)
-        
-        self.button = QPushButton("Add")
-        self.layout.addRow(self.button)
 
-    def getWorkingDays(self):
-        return self.edit.text(), self.weight_edit.text()
+        self.add_button = QPushButton("Add")
+        self.add_button.clicked.connect(self.added)
 
-    def openDialog(self):
-        self.exec()
-
+    def getParameters(self):
+        return { "weight" : self.weight_edit.text()}
+    
     def added(self):
+        self.close()
 
-        pass
-        
+class ShiftRequirementWithWeight(ShiftRequirementBase):
+
+    def __init__(self, title, ):
+        super().__init__(title)
+        self.layout.addRow(self.add_button)
+
+
+class ShiftRequirementWithWeightAndParam(ShiftRequirementBase):
+
+    def __init__(self, title, param_name):
+        super().__init__(title)
+        self.param_name = param_name
+        self.text = QLabel(title)
+        self.edit = QLineEdit()
+        self.layout.addRow(self.text, self.edit)
+        self.layout.addRow(self.add_button)
+
+    def getParameters(self):
+        parameters = super().getParameters()
+        parameters[self.param_name] = self.edit.text()
+        return parameters
 
 
 class ParametersForm(QWidget):
@@ -99,12 +133,17 @@ class ParametersForm(QWidget):
 
         formlayout.addRow(QLabel("Choose a running mode"), self.combo)
 
-        self.sr = QPushButton("Working Days Requirement")
+        self.requirements = []
+        self.requirements.append(ShiftRequirementTagWithWeightAndParam("Expected Number Of Working Days", "expected_number_of_working_days", 'ewd'))
+        self.requirements.append(ShiftRequirementTagWithWeightAndParam("Expected Number Of Workers Per Shift", "expected_number_of_workers_per_shift", "enwps"))
+        self.requirements.append(ShiftRequirementTagWithWeight("Successive Shift Pair", "successive_shift_pair"))
+        self.requirements.append(ShiftRequirementTagWithWeight("Consecutive 2 Days Off", "consecutive_2_days_leave"))
+        self.requirements.append(ShiftRequirementTagWithWeight("No More Than 2 Consecutive Days Off", "no_consecutive_leave"))
+        self.requirements.append(ShiftRequirementTagWithWeightAndParam("Maximum Number Of Consecutive Shifts", "maximum_number_of_consecutive_shifts", "mcwd"))
+        self.requirements.append(ShiftRequirementTagWithWeightAndParam("Minimum Number N Days Off Within 7 Days", "minimum_n_days_leave_within_7_days", "mndlw7d"))
 
-        self.working_days = WorkingDays("Working Days Requirement")
-
-        self.sr.clicked.connect(self.working_days.openDialog)
-        formlayout.addRow(self.sr)
+        for requirement in self.requirements:
+            formlayout.addRow(requirement)
 
         self.runbutton = QPushButton("Run")
         formlayout.addRow(self.runbutton)
@@ -118,10 +157,16 @@ class ParametersForm(QWidget):
         Returns:
             a dictionary of the parameters
         """
-        parameters = {}
-        for key in self.parameters_fields:
-            parameters[key] = getattr(self, key + "_edit").text()
-
+        parameters = []
+        for requirement in self.requirements:
+            requirement_parameter = requirement.getParameters()
+            # check if the requirement is empty
+            empty = False
+            for key in requirement_parameter['parameters']:
+                if requirement_parameter['parameters'][key] == '':
+                    empty = True
+            if not empty:
+                parameters.append(requirement.getParameters())
         return parameters
 
     def toDataFrame(self) -> pd.DataFrame:
