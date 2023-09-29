@@ -11,6 +11,12 @@ class User(object):
     email=str
     shifts=[]
 
+    def __init__(self, username, password, email, shifts):
+        self.username = username
+        self.password = password
+        self.email = email
+        self.shifts = shifts
+
     def getUsername(self):
         return self.username
 

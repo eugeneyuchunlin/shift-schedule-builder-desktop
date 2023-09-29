@@ -3,6 +3,8 @@ from PySide6.QtWidgets import (
     QPushButton, QVBoxLayout
 )
 
+from src.model.data_adapter import DataAdapter
+
 class LoginDialog(QDialog):
 
     def __init__(self):
@@ -34,13 +36,17 @@ class LoginDialog(QDialog):
         print(self._username, self._password)
 
         # check if the username and password are correct
-        self.close()
-        pass
+        if(self._username == "" or self._password == ""):
+            return 
+        else:
+            self.user = DataAdapter().getUser(self._username, self._password)
+            if self.user is None:
+                self.close()
+            else:
+                self.close()
 
     def getLoginInfo(self):
-        return self.form.getLoginInfo()
-    
-    def closeEvent(self, event):
-        exit()
-        event.accept()
-        pass
+        return {
+            "username": self._username,
+            "password": self._password
+        }
