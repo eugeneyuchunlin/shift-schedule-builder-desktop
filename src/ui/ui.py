@@ -85,6 +85,8 @@ class MainWindow(QMainWindow):
         fileMenu.addActions([seperator_action, export])
 
         # insert the login dialog here
+        self.login_dialog = LoginDialog()
+        self.login_dialog.exec()
 
         self.configuration = Tabs(Configuration)
         self.setCentralWidget(self.configuration)

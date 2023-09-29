@@ -39,3 +39,8 @@ class LoginDialog(QDialog):
 
     def getLoginInfo(self):
         return self.form.getLoginInfo()
+    
+    def closeEvent(self, event):
+        exit()
+        event.accept()
+        pass
