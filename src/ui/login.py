@@ -41,9 +41,10 @@ class LoginDialog(QDialog):
         else:
             self.user = DataAdapter().getUser(self._username, self._password)
             if self.user is None:
-                self.close()
+                return 
             else:
                 self.close()
+                return(self._username)
 
     def getLoginInfo(self):
         return {
