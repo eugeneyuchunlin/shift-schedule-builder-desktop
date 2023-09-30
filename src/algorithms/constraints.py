@@ -453,7 +453,7 @@ class PreferenceDayOff(ConstraintFunction):
         return "Customize Leave"
 
 DAU_AVAILABLE_CONSTRAINTS = {
-    'expected_working_days' : {
+    'expected_number_of_working_days' : {
         "type" : "binomial_polynomial",
         "function" : ExpectedWorkingDays
     },
@@ -488,7 +488,7 @@ DAU_AVAILABLE_CONSTRAINTS = {
 }
 
 SA_AVAILABLE_CONSTRAINTS = {
-    'expected_working_days' : {
+    'expected_number_of_working_days' : {
         "type" : "binomial_polynomial",
         "function" : ExpectedWorkingDays
     },

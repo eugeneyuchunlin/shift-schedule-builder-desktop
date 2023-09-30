@@ -7,39 +7,20 @@ import pandas as pd
 import neal
 from copy import deepcopy
 from pyqubo import Array, Num
+from .Solver import Solver
 
+from src.algorithms import dau_url, dma_api_key, api_key, dau_url, MONGODB_URI
+
+
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+
+db_client = MongoClient(MONGODB_URI, server_api=ServerApi('1'))
 try:
-    from django.conf import settings
-    dau_url = settings.DAU_URL
-    dma_url = settings.DMA_URL
-    api_key = settings.DAU_API_KEY
-    dma_api_key = settings.DMA_API_KEY
-    MONGODB_URI = settings.MONGODB_URI
-except:
-    import yaml
-
-    with open("config.yml", "r") as f:
-        config = yaml.safe_load(f)
-
-    dau_url = config['DAU_URL']
-    dma_url = config['DMA_URL']
-    api_key = config['DAU_API_KEY']
-    dma_api_key = config['DMA_API_KEY']
-    MONGODB_URI = config['MONGODB_URI']
-    pass
-
-try:
-    from . import db_client
-except:
-    from pymongo.mongo_client import MongoClient
-    from pymongo.server_api import ServerApi
-
-    db_client = MongoClient(MONGODB_URI, server_api=ServerApi('1'))
-    try:
-        db_client.admin.command('ping')
-        print('MongoDB connected')
-    except Exception as e:
-        print(e)
+    db_client.admin.command('ping')
+    print('MongoDB connected')
+except Exception as e:
+    print(e)
 
 try:
     from .constraints import DAU_AVAILABLE_CONSTRAINTS, SA_AVAILABLE_CONSTRAINTS
@@ -48,9 +29,10 @@ except:
 
 
 
-class DAUSolver():
+class DAUSolver(Solver):
 
     def __init__(self, problem, CONSTRAINTS=DAU_AVAILABLE_CONSTRAINTS):
+        super().__init__()
         self.problem = problem
         self._constraints = deepcopy(problem['constraints'])
         self._number_of_workers = int(problem['number_of_workers'])
@@ -61,6 +43,10 @@ class DAUSolver():
         self._X = Array.create('x', shape=(self._number_of_workers, self._days), vartype='BINARY')
 
         constraints = problem['constraints']
+
+        with open("data.json", "w") as file:
+            file.write(json.dumps(problem, indent=4))
+            file.close()
 
         # shift_content would be a dict and which is mutable
         # so we don't have to worry about the redundant data
@@ -74,11 +60,11 @@ class DAUSolver():
         #         if shift_array[j] == '0':
         #             days_off_index[i].append(j)
 
-        self._days_off_index = problem['reserved_leave']
-        print(self._days_off_index)
+        self._days_off_index = []
+        # print(self._days_off_index)
 
         for i in range(len(constraints)):
-            constraints[i]['parameters']['days_off_index'] = self._days_off_index
+            constraints[i]['parameters']['days_off_index'] = []
 
         self._binomial_constraints = []
         self._inequality_constraints = []
@@ -322,13 +308,13 @@ class DAUSolver():
         with open('solution.json', 'w') as f:
             json.dump(solution, f, indent=4)
 
-        tables = self.decode(solution['qubo_solution']['solutions'])
+        self.tables = self.decode(solution['qubo_solution']['solutions'])
         # print(tables[0])
         # table = pd.DataFrame(tables[0], dtype=int, columns=range(1, int(self.problem['days'])+1))
         # print(table)
         # self.evaluate(table)
 
-        return tables
+        return self.tables
 
     def evaluate(self, table):
         _table = pd.DataFrame(table)
@@ -375,7 +361,7 @@ class DAUSolver():
             "reserved_leave" : days_off_index
         }
 
-        db = db_client['test']
+        db = db_client['Test1']
         collection = db['shifts']
         # insert or update
         result = collection.update_one(
@@ -412,7 +398,8 @@ class SASolver(DAUSolver):
         solution = sampleset.sample
         shift = self._generate_shift_from_solution(solution)
         # print(shift)
-        return [shift]
+        self.tables = [shift]
+        return self.tables
 
 class MockSolver(DAUSolver):
 

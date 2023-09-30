@@ -3,7 +3,8 @@ from .user import User
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
-MONGODB_URI = "mongodb+srv://guest1:guest1@cluster0.kk0nx8e.mongodb.net/?retryWrites=true&w=majority"
+from src.model import MONGODB_URI
+
 db_client = MongoClient(MONGODB_URI, server_api=ServerApi('1'))
 try:
     db_client.admin.command("ping")

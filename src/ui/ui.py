@@ -85,12 +85,12 @@ class MainWindow(QMainWindow):
         fileMenu.addActions([seperator_action, export])
 
         # insert the login dialog here
-        self.login_dialog = LoginDialog()
-        self.login_dialog.exec()
+        # self.login_dialog = LoginDialog()
+        # self.login_dialog.exec()
         
-        # if the user cancels the login dialog, close the application
-        if self.login_dialog.getUser() is None:
-            quit()
+        # # if the user cancels the login dialog, close the application
+        # if self.login_dialog.getUser() is None:
+        #     quit()
 
         self.configuration = Tabs(Configuration)
         self.setCentralWidget(self.configuration)

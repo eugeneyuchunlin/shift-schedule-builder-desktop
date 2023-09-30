@@ -70,3 +70,5 @@ class TableWidget(QTableWidget):
                 self.setItem(i, j, item)
 
         self.resizeColumnsToContents()
+
+    

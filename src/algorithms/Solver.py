@@ -27,7 +27,7 @@ class TestSolver(object):
 class Solver(QThread):
 
     progress = Signal(int)
-    finished = Signal(pd.DataFrame, pd.DataFrame)
+    finished = Signal(pd.DataFrame)
     error = Signal(str)
 
     solutions = []
@@ -45,32 +45,38 @@ class Solver(QThread):
 
     def run(self):
 
-        def generateShiftFromSolution(per_grave, days, solution_dict):
-            table = np.zeros(per_grave * days)
-            for key, value in solution_dict.items():
-                if "Graveyard" in key and "*" not in key:
-                    newkey = int(key.replace("Graveyard[", "").replace("]", ""))
-                    table[newkey] = value
-            table = table.reshape(per_grave, days).astype(int)
-            return table
+        def generateShiftFromTable(table, namelist):
+            """
+            This function generates a pandas dataframe from a table which is a 2-D array.
+            The first row of the dataframe is name, 1, 2, ..., n days
+            The first column of the dataframe is the name of the workers
+
+            Args:
+                table: a 2-D array
+                namelist: a list of names of the workers
+            
+            Returns:
+                a pandas dataframe
+            """
+            df = pd.DataFrame(table, columns=[str(i) for i in range(1, len(table[0]) + 1)])
+            df.insert(0, "name", namelist)
+            return df
         
-        def transformSolutionToTable(solution):
-            firstday, days = calendar.monthrange(int(self._parameters["year"]), int(self._parameters["month"]))
-            table = generateShiftFromSolution(int(self._parameters['per_grave']), days, solution)
+        def generateShifts(tables, namelist):
+            dataframes = []
+            for i in range(len(tables)):
+                dataframes.append(generateShiftFromTable(tables[i], namelist))
 
-            table_df = pd.DataFrame(table, columns=[str(i) for i in range(1, days + 1)])
-            return table_df
-
+            return dataframes
         try:
-            self.solutions, self.algorithm_data = self.solve(**self._parameters)
-            self.shifts = []
-            for i in range(len(self.solutions)):
-                self.shifts.append(transformSolutionToTable(self.solutions[i]))
+            self.compile()
+            self.tables = self.solve()
+            self.shifts = generateShifts(self.tables, self._namelist)
         except Exception as e:
             self.error.emit(str(e))
             return
-        # print(self.solutions)
-        self.finished.emit(self.shift, self.algorithm_data)
+        print(self.solutions)
+        self.finished.emit(self.shifts[0])
 
 
 if __name__ == '__main__':

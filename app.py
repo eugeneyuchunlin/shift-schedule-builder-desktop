@@ -3,9 +3,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 from src.ui.ui import MainWindow
 from src.ui.working_area import WorkingArea
 
-from src.algorithms.DAUSolver import QuantumAnnealingAlgorithm
-from src.algorithms.SASolver import SimulatedAnnealingAlgorithm
-
+from src.algorithms.Solvers import DAUSolver, SASolver, MockSolver
 import pandas as pd
 import os
 
@@ -20,23 +18,25 @@ class NSPSolver(WorkingArea):
         #     self.solver = QuantumAnnealingAlgorithm()
         # elif mode == 'SA':
         #     self.solver = SimulatedAnnealingAlgorithm()
-        self.solver = QuantumAnnealingAlgorithm() 
         # Connect the signals and slots, especially for triggers
         self.form.runbutton.clicked.connect(self.runTrigger)
-        self.solver.error.connect(self.errorHandlerSlot)
-
-        self.solver.finished.connect(self.finishRunningSlot)
-
-        print(type(self.solver.logger.log_signal))
-        self.solver.logger.log_signal.connect(self.log.append)
 
     def runTrigger(self):
+        content = self.table.getContent()
+        print(content)
         parameters = self.form.parameters()
-        print(parameters)
-        # self.solver.setParameters(**parameters)
-        # self.solver.start()
+        parameters['content'] = content
 
-        # self.form.runbutton.setDisabled(True)
+        if parameters['type'] == 'DAU':
+            self.solver = DAUSolver(problem=parameters)
+        elif parameters['type'] == 'SA':
+            self.solver = SASolver(problem=parameters)
+            
+        self.solver.error.connect(self.errorHandlerSlot)
+        self.solver.finished.connect(self.finishRunningSlot)
+
+        self.solver.start()
+        self.form.runbutton.setDisabled(True)
 
     def errorHandlerSlot(self, alert_msg):
         msg = QMessageBox()
@@ -51,21 +51,12 @@ class NSPSolver(WorkingArea):
 
     def finishRunningSlot(
             self,
-            shift: pd.DataFrame,
-            algorithm_data: pd.DataFrame):
+            shift: pd.DataFrame):
         # print("finishRunningSlot")
         # print(id(self.table))
         self.table.loadDataFrame(shift)
-        self.algorithm_table.loadDataFrame(algorithm_data)
         self.form.runbutton.setDisabled(False)
 
-        # Enable user to select solution
-        self.form.index_of_solution_edit.editingFinished.connect(self.indexOfSolutionTrigger)
-
-
-    def indexOfSolutionTrigger(self):
-        index = int(self.form.index_of_solution_edit.text())
-        self.table.loadDataFrame(self.solver.transformSolutionToTable(index))
 
 
 if __name__ == "__main__":

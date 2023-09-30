@@ -1,3 +1,4 @@
+from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 from .table_widget import TableWidget
 import calendar
 
@@ -52,9 +53,48 @@ class ShiftTable(TableWidget):
             days = calendar.monthrange(kwargs['year'], kwargs['month'])[1]
 
         self.setRowCount(number_of_people)
-        self.setColumnCount(days)
-        self.setHorizontalHeaderLabels([str(i) for i in range(1, days + 1)])
+        self.setColumnCount(1 + days)
+
+        self.setHorizontalHeaderLabels(['name'] + [str(i) for i in range(1, days + 1)])
         self.setVerticalHeaderLabels(
             [str(i) for i in range(1, number_of_people + 1)])
 
+        # set name
+        for i in range(number_of_people):
+            item = QTableWidgetItem('name' + str(i + 1))
+            self.setItem(i, 0, item)
+        
+        # initialize content of the table, set to 1
+        for i in range(number_of_people):
+            for j in range(1, days + 1):
+                item = QTableWidgetItem('1')
+                self.setItem(i, j, item)
+
+
         self.resizeColumnsToContents()
+
+    def getContent(self):
+        """
+        This method returns the content of the table as a list.
+        The structure of the list is as follows:
+            [
+                {
+                    "name": "name1",
+                    "shift_array" : []
+                }
+
+            ]        
+
+        Returns:
+            A list
+        """
+
+        content = []
+        for i in range(self.rowCount()):
+            row = {}
+            row['name'] = self.item(i, 0).text()
+            row['shift_array'] = []
+            for j in range(1, self.columnCount()):
+                row['shift_array'].append(self.item(i, j).text())
+            content.append(row)
+        return content

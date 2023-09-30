@@ -120,11 +120,11 @@ class ParametersForm(QWidget):
         formlayout.addRow(self._days_key, self._days_edit)
 
         self._number_of_workers = QLabel("Number of workers")
-        self._number_of_workers_edit = QLineEdit("8")
+        self._number_of_workers_edit = QLineEdit("10")
         formlayout.addRow(self._number_of_workers, self._number_of_workers_edit)
 
         self._computation_time = QLabel("Computation time")
-        self._computation_time_edit = QLineEdit("100")
+        self._computation_time_edit = QLineEdit("1")
         formlayout.addRow(self._computation_time, self._computation_time_edit)
 
         self.combo = QComboBox()
@@ -139,7 +139,7 @@ class ParametersForm(QWidget):
         self.requirements.append(ShiftRequirementTagWithWeight("Successive Shift Pair", "successive_shift_pair"))
         self.requirements.append(ShiftRequirementTagWithWeight("Consecutive 2 Days Off", "consecutive_2_days_leave"))
         self.requirements.append(ShiftRequirementTagWithWeight("No More Than 2 Consecutive Days Off", "no_consecutive_leave"))
-        self.requirements.append(ShiftRequirementTagWithWeightAndParam("Maximum Number Of Consecutive Shifts", "maximum_number_of_consecutive_shifts", "mcwd"))
+        self.requirements.append(ShiftRequirementTagWithWeightAndParam("Maximum Number Of Consecutive Shifts", "maximum_consecutive_working_days", "mcwd"))
         self.requirements.append(ShiftRequirementTagWithWeightAndParam("Minimum Number N Days Off Within 7 Days", "minimum_n_days_leave_within_7_days", "mndlw7d"))
 
         for requirement in self.requirements:
@@ -167,7 +167,17 @@ class ParametersForm(QWidget):
                     empty = True
             if not empty:
                 parameters.append(requirement.getParameters())
-        return parameters
+
+        data = {
+            "type" : self.combo.currentText(),
+            "days": int(self._days_edit.text()),
+            "number_of_workers": int(self._number_of_workers_edit.text()),
+            "computation_time": int(self._computation_time_edit.text()),
+            "shift_id" : "123",
+            "reserved_leave" : [],
+            "constraints" : parameters
+        }
+        return data
 
     def toDataFrame(self) -> pd.DataFrame:
         """
