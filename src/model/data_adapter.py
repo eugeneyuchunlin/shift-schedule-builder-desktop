@@ -4,6 +4,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
 from src.model import MONGODB_URI
+import pandas as pd
 
 db_client = MongoClient(MONGODB_URI, server_api=ServerApi('1'))
 try:
@@ -26,7 +27,7 @@ class DataAdapter(object):
         if user_data is None:
             return
 
-        user = User(username=user_data['username'], password=user_data['password'], email=user_data['email'], shifts=[])
+        user = User(username=user_data['username'], password=user_data['password'], email=user_data['email'], shifts=user_data['shifts'])
         return user
     
     def updateUserShifts(self, user:User):
@@ -40,7 +41,7 @@ class DataAdapter(object):
         # save the result
 
         collection = self.db.Shifts
-        shift_content = data['shift'].to_json()
+        shift_content = data['shift'].to_dict(orient='records')
         print(shift_content) 
 
         inserted_data = {
@@ -51,9 +52,20 @@ class DataAdapter(object):
         collection.update_one({"shift_id" : data['shift_id']}, {"$set": inserted_data}, upsert=True)
         user.addShift(data['shift_id'])
         self.updateUserShifts(user)
+    
+    def loadShift(self, shift_id):
+        shift = self.db.Shifts.find_one({"shift_id": shift_id})
+        shift_content = shift['shift']
+        shift_df = pd.DataFrame().from_dict(shift_content)
+        return shift_df
 
     def loadShifts(self, user:User):
         # write your code here
+        shifts = []
 
-        pass
+        for shift_id in user.getShifts():
+            shift_df = self.loadShift(shift_id)    
+            shifts.append(shift_df)
+
+        return shifts
 

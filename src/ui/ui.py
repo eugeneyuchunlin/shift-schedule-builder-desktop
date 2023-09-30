@@ -26,6 +26,7 @@ from src.ui.table_widget import TableWidget
 from src.ui.shift_table import ShiftTable
 from src.ui.parameters_form import ParametersForm
 from src.ui.tabs import Tabs
+from src.model.data_adapter import DataAdapter
 
 
 
@@ -92,6 +93,8 @@ class MainWindow(QMainWindow):
         self.user = self.login_dialog.getUser()
         if self.user is None:
             quit()
+
+        DataAdapter().loadShifts(self.user)        
 
         self.configuration = Tabs(Configuration, self.user)
         self.setCentralWidget(self.configuration)
