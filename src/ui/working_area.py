@@ -31,7 +31,7 @@ class WorkingArea(QWidget):
         log: the log to display the log of the algorithm
     """
 
-    def __init__(self, name: str, user:User):
+    def __init__(self, name: str, user:User, shift_id=None):
         """
         This is the constructor of the WorkingArea class. It calls the constructor of the QWidget class.
         You can specify the name of the working area by setting the name argument.
@@ -42,8 +42,14 @@ class WorkingArea(QWidget):
         self.name = name
         self.user = user
         self.running_thread = None
-        self.shift_id = str(uuid.uuid4())
+        if(shift_id is not None):
+            self.shift_id = shift_id
+        else:
+            self.shift_id = str(uuid.uuid4())
         self.initUI()
+
+        if shift_id is not None:
+            self.table.loadDataFrame(DataAdapter().loadShift(self.shift_id))
 
     def initUI(self):
         """
@@ -101,7 +107,13 @@ class WorkingArea(QWidget):
             number_of_days = int(number_of_days)
 
         self.table.createShiftTable(number_of_people, days=number_of_days)
-
+    
+    # def loadShift(self, shift_id):
+    #     self.shift_id = shift_id
+    #     data = DataAdapter().loadShift(shift_id)
+    #     # self.parameters = data['parameters']
+    #     # self.form.loadParametersFromDataFrame(pd.DataFrame(self.parameters))
+    #     self.table.loadDataFrame(data)
 
 
     def runTrigger(self):
@@ -111,9 +123,9 @@ class WorkingArea(QWidget):
         self.parameters['content'] = content
 
         if self.parameters['type'] == 'DAU':
-            self.solver = MockSolver(problem=self.parameters)
+            self.solver = DAUSolver(problem=self.parameters)
         elif self.parameters['type'] == 'SA':
-            self.solver = MockSolver(problem=self.parameters)
+            self.solver = SASolver(problem=self.parameters)
             
         self.solver.error.connect(self.errorHandlerSlot)
         self.solver.finished.connect(self.finishRunningSlot)

@@ -94,8 +94,6 @@ class MainWindow(QMainWindow):
         if self.user is None:
             quit()
 
-        DataAdapter().loadShifts(self.user)        
-
         self.configuration = Tabs(self.user)
         self.setCentralWidget(self.configuration)
 
