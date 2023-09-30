@@ -44,10 +44,13 @@ class LoginDialog(QDialog):
                 return 
             else:
                 self.close()
-                return(self._username)
+                return
 
     def getLoginInfo(self):
         return {
             "username": self._username,
             "password": self._password
         }
+
+    def getUser(self):
+        return self.user
