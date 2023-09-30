@@ -1,8 +1,12 @@
 import uuid
-from PySide6.QtWidgets import (QWidget, QGridLayout, QTextEdit)
+from PySide6.QtWidgets import (QWidget, QGridLayout, QTextEdit, QMessageBox)
 from .shift_table import ShiftTable
 from .parameters_form import ParametersForm
 from src.model.user import User
+from src.algorithms.Solvers import DAUSolver, SASolver, MockSolver
+from src.model.data_adapter import DataAdapter
+
+import pandas as pd
 
 class WorkingArea(QWidget):
     """
@@ -54,6 +58,7 @@ class WorkingArea(QWidget):
         layout = QGridLayout()
         self.table = ShiftTable()
         self.form = ParametersForm()
+        self.form.runbutton.clicked.connect(self.runTrigger)
 
         # connect the signal of edit fields
         self.form._number_of_workers_edit.editingFinished.connect(
@@ -97,3 +102,47 @@ class WorkingArea(QWidget):
 
         self.table.createShiftTable(number_of_people, days=number_of_days)
 
+
+
+    def runTrigger(self):
+        content = self.table.getContent()
+        print(content)
+        self.parameters = self.form.parameters()
+        self.parameters['content'] = content
+
+        if self.parameters['type'] == 'DAU':
+            self.solver = MockSolver(problem=self.parameters)
+        elif self.parameters['type'] == 'SA':
+            self.solver = MockSolver(problem=self.parameters)
+            
+        self.solver.error.connect(self.errorHandlerSlot)
+        self.solver.finished.connect(self.finishRunningSlot)
+
+        self.solver.start()
+        self.form.runbutton.setDisabled(True)
+
+    def errorHandlerSlot(self, alert_msg):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("Error")
+        msg.setInformativeText(alert_msg)
+        msg.setWindowTitle("Error")
+        msg.addButton(QMessageBox.Ok)
+        msg.exec()
+
+        self.form.runbutton.setDisabled(False)
+
+    def finishRunningSlot(
+            self,
+            shift: pd.DataFrame):
+        # print("finishRunningSlot")
+        # print(id(self.table))
+        self.table.loadDataFrame(shift)
+        data = {
+            "shift_id": self.shift_id,
+            "parameters" : self.parameters,
+            "shift": shift
+        }
+        print(self.user.getUsername())
+        DataAdapter().saveShift(self.user, data)
+        self.form.runbutton.setDisabled(False)

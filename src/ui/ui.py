@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
     This class is used to create the main window of the application.
     """
 
-    def __init__(self, Configuration, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -96,7 +96,7 @@ class MainWindow(QMainWindow):
 
         DataAdapter().loadShifts(self.user)        
 
-        self.configuration = Tabs(Configuration, self.user)
+        self.configuration = Tabs(self.user)
         self.setCentralWidget(self.configuration)
 
     def saveFile(self):
