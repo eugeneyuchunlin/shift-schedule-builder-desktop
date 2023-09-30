@@ -89,10 +89,11 @@ class MainWindow(QMainWindow):
         self.login_dialog.exec()
         
         # if the user cancels the login dialog, close the application
-        if self.login_dialog.getUser() is None:
+        self.user = self.login_dialog.getUser()
+        if self.user is None:
             quit()
 
-        self.configuration = Tabs(Configuration)
+        self.configuration = Tabs(Configuration, self.user)
         self.setCentralWidget(self.configuration)
 
     def saveFile(self):

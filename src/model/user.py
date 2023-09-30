@@ -6,11 +6,6 @@
 
 class User(object):
 
-    username=str
-    password=str
-    email=str
-    shifts=[]
-
     def __init__(self, username, password, email, shifts):
         self.username = username
         self.password = password
@@ -48,3 +43,11 @@ class User(object):
         if(type(shifts) != list):
             raise Exception("TypeError")
         self.shifts = shifts
+
+    def addShift(self, shift_id):
+        if self.shifts.count(shift_id) > 0:
+            pass
+        else:
+            self.shifts.append(shift_id)
+
+    

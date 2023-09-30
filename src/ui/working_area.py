@@ -1,6 +1,8 @@
+import uuid
 from PySide6.QtWidgets import (QWidget, QGridLayout, QTextEdit)
 from .shift_table import ShiftTable
 from .parameters_form import ParametersForm
+from src.model.user import User
 
 class WorkingArea(QWidget):
     """
@@ -25,7 +27,7 @@ class WorkingArea(QWidget):
         log: the log to display the log of the algorithm
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, user:User):
         """
         This is the constructor of the WorkingArea class. It calls the constructor of the QWidget class.
         You can specify the name of the working area by setting the name argument.
@@ -34,9 +36,9 @@ class WorkingArea(QWidget):
         super().__init__()
 
         self.name = name
-
+        self.user = user
         self.running_thread = None
-
+        self.shift_id = str(uuid.uuid4())
         self.initUI()
 
     def initUI(self):

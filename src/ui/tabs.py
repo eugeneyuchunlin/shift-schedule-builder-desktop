@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (QWidget, QTabWidget, QVBoxLayout)
-
+from src.model.user import User
 class Tabs(QWidget):
     """
     This class is used to create a tab widget and handle tabs.
@@ -29,14 +29,14 @@ class Tabs(QWidget):
     tabs = []
     names = []
 
-    def __init__(self, configurationType: QWidget):
+    def __init__(self, configurationType: QWidget, user:User):
         """
         This is the constructor of the Tabs class. It calls the constructor of the QWidget class.
         You can specify the type of the tab by setting the configurationType argument.
 
         """
         super().__init__()
-
+        self.user = user
         self.number_of_untitled_tabs = 0  # FIXME: deprecated
 
         self.configuration_type = configurationType
@@ -71,7 +71,7 @@ class Tabs(QWidget):
         """
         This method creates a new tab.
         """
-        tab = self.configuration_type(name)
+        tab = self.configuration_type(name, self.user)
         return tab
 
     def switchToLastTab(self):

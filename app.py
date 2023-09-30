@@ -2,8 +2,9 @@ import sys
 from PySide6.QtWidgets import QApplication, QMessageBox
 from src.ui.ui import MainWindow
 from src.ui.working_area import WorkingArea
-
+from src.model.data_adapter import DataAdapter
 from src.algorithms.Solvers import DAUSolver, SASolver, MockSolver
+from src.model.user import User
 import pandas as pd
 import os
 
@@ -11,8 +12,8 @@ import os
 class NSPSolver(WorkingArea):
 
     # TODO: enable user to register new solver
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self, name, user:User):
+        super().__init__(name, user)
 
         # if mode == 'DAU':
         #     self.solver = QuantumAnnealingAlgorithm()
@@ -24,13 +25,13 @@ class NSPSolver(WorkingArea):
     def runTrigger(self):
         content = self.table.getContent()
         print(content)
-        parameters = self.form.parameters()
-        parameters['content'] = content
+        self.parameters = self.form.parameters()
+        self.parameters['content'] = content
 
-        if parameters['type'] == 'DAU':
-            self.solver = DAUSolver(problem=parameters)
-        elif parameters['type'] == 'SA':
-            self.solver = SASolver(problem=parameters)
+        if self.parameters['type'] == 'DAU':
+            self.solver = MockSolver(problem=self.parameters)
+        elif self.parameters['type'] == 'SA':
+            self.solver = MockSolver(problem=self.parameters)
             
         self.solver.error.connect(self.errorHandlerSlot)
         self.solver.finished.connect(self.finishRunningSlot)
@@ -55,6 +56,13 @@ class NSPSolver(WorkingArea):
         # print("finishRunningSlot")
         # print(id(self.table))
         self.table.loadDataFrame(shift)
+        data = {
+            "shift_id": self.shift_id,
+            "parameters" : self.parameters,
+            "shift": shift
+        }
+        print(self.user.getUsername())
+        DataAdapter().saveShift(self.user, data)
         self.form.runbutton.setDisabled(False)
 
 
