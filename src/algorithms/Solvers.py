@@ -7,7 +7,7 @@ import pandas as pd
 import neal
 from copy import deepcopy
 from pyqubo import Array, Num
-from .Solver import Solver
+from .solver import Solver
 
 from src.algorithms import dau_url, dma_api_key, api_key, dau_url, MONGODB_URI, dma_url
 
@@ -38,7 +38,7 @@ class DAUSolver(Solver):
         self._number_of_workers = int(problem['number_of_workers'])
         self._days = int(problem['days'])
         self._computation_time = int(problem['computation_time'])
-        self._shift_id = problem['shift_id']
+        self._shift_id = ""
 
         self._X = Array.create('x', shape=(self._number_of_workers, self._days), vartype='BINARY')
 

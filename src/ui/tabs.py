@@ -103,8 +103,7 @@ class Tabs(QWidget):
             A tuple of three dataframes: the shift table, the algorithm table, and the form.
         """
         working_area = self.tabs[self.tabwidget.currentIndex()]
-        return working_area.table.exportTableToDataFrame(
-        ), working_area.algorithm_table.exportTableToDataFrame(), working_area.form.toDataFrame()
+        return working_area.table.exportTableToDataFrame()
 
     def currentTab(self) -> QWidget:
         """

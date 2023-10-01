@@ -98,3 +98,15 @@ class ShiftTable(TableWidget):
                 row['shift_array'].append(self.item(i, j).text())
             content.append(row)
         return content
+    
+    def getNameList(self):
+        """
+        This method returns the name list of the table as a list.
+
+        Returns:
+            A list
+        """
+        name_list = []
+        for i in range(self.rowCount()):
+            name_list.append(self.item(i, 0).text())
+        return name_list

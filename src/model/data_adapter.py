@@ -1,4 +1,5 @@
 from .user import User
+from .shift import Shift
 
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
@@ -35,29 +36,31 @@ class DataAdapter(object):
         user_collection.update_one({"username": user.getUsername()}, {"$set": {"shifts": user.getShifts()}})
         pass
 
-    def saveShift(self, user:User, data):
+    def saveShift(self, user:User, shift:Shift):
         # write your code here
         # you can refer _solver.py DAUSolver.saveShift()
         # save the result
 
         collection = self.db.Shifts
-        shift_content = data['shift'].to_dict(orient='records')
-        print(shift_content) 
+        tables = shift.getTables()
 
-        inserted_data = {
-            "shift_id": data['shift_id'],
-            "parameters": data['parameters'],
-            "shift": shift_content
-        }
-        collection.update_one({"shift_id" : data['shift_id']}, {"$set": inserted_data}, upsert=True)
-        user.addShift(data['shift_id'])
+
+        inserted_data = shift.getShiftConfiguration() 
+        inserted_data['table'] = tables
+        collection.update_one({"shift_id" : shift.getShiftId()}, {"$set": inserted_data}, upsert=True)
+
+        user.addShift(shift.getShiftId())
         self.updateUserShifts(user)
     
-    def loadShift(self, shift_id):
+    def loadShift(self, shift_id) -> Shift:
         shift = self.db.Shifts.find_one({"shift_id": shift_id})
-        shift_content = shift['shift']
-        shift_df = pd.DataFrame().from_dict(shift_content)
-        return shift_df
+
+        tables = shift['table']
+        del shift['table']
+
+        shift = Shift(shift_id=shift['shift_id'], shift_configuration=shift, tables=tables)
+
+        return shift
 
     def loadShifts(self, user:User):
         # write your code here

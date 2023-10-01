@@ -3,7 +3,6 @@ from .console import Logger
 import pandas as pd
 import numpy as np
 
-import calendar
 
 class TestSolver(object):
 
@@ -27,7 +26,7 @@ class TestSolver(object):
 class Solver(QThread):
 
     progress = Signal(int)
-    finished = Signal(pd.DataFrame)
+    finished = Signal(list)
     error = Signal(str)
 
     solutions = []
@@ -44,39 +43,13 @@ class Solver(QThread):
         pass
 
     def run(self):
-
-        def generateShiftFromTable(table, namelist):
-            """
-            This function generates a pandas dataframe from a table which is a 2-D array.
-            The first row of the dataframe is name, 1, 2, ..., n days
-            The first column of the dataframe is the name of the workers
-
-            Args:
-                table: a 2-D array
-                namelist: a list of names of the workers
-            
-            Returns:
-                a pandas dataframe
-            """
-            df = pd.DataFrame(table, columns=[str(i) for i in range(1, len(table[0]) + 1)])
-            df.insert(0, "name", namelist)
-            return df
-        
-        def generateShifts(tables, namelist):
-            dataframes = []
-            for i in range(len(tables)):
-                dataframes.append(generateShiftFromTable(tables[i], namelist))
-
-            return dataframes
         try:
             self.compile()
             self.tables = self.solve()
-            self.shifts = generateShifts(self.tables, self._namelist)
         except Exception as e:
             self.error.emit(str(e))
             return
-        print(self.solutions)
-        self.finished.emit(self.shifts[0])
+        self.finished.emit(self.tables)
 
 
 if __name__ == '__main__':

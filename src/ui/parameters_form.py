@@ -173,7 +173,6 @@ class ParametersForm(QWidget):
             "days": int(self._days_edit.text()),
             "number_of_workers": int(self._number_of_workers_edit.text()),
             "computation_time": int(self._computation_time_edit.text()),
-            "shift_id" : "123",
             "reserved_leave" : [],
             "constraints" : parameters
         }

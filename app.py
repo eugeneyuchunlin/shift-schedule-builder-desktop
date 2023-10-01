@@ -1,11 +1,6 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMessageBox
+from PySide6.QtWidgets import QApplication
 from src.ui.ui import MainWindow
-from src.ui.working_area import WorkingArea
-from src.model.data_adapter import DataAdapter
-from src.algorithms.Solvers import DAUSolver, SASolver, MockSolver
-from src.model.user import User
-import pandas as pd
 import os
 
 

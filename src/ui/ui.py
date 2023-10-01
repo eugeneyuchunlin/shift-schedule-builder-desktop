@@ -10,7 +10,6 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QAction
 import pandas as pd
-from .parameters import SA_FORM_CONFIG, DAU_FORM_CONFIG
 from ..utility.util import getFileName
 
 # Important:
@@ -107,12 +106,10 @@ class MainWindow(QMainWindow):
         if not file_path:
             return
 
-        df_shift, df_algorithm_data, df_form = self.configuration.exportWorkingArea()
+        df_shift = self.configuration.exportWorkingArea()
 
         with pd.ExcelWriter(file_path, engine="openpyxl") as writer:
             df_shift.to_excel(writer, sheet_name="shift")
-            df_algorithm_data.to_excel(writer, sheet_name="data")
-            df_form.to_excel(writer, sheet_name="parameters")
 
         self.configuration.setCurrentTabName(getFileName(file_path))
 

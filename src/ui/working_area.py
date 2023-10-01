@@ -3,7 +3,8 @@ from PySide6.QtWidgets import (QWidget, QGridLayout, QTextEdit, QMessageBox)
 from .shift_table import ShiftTable
 from .parameters_form import ParametersForm
 from src.model.user import User
-from src.algorithms.Solvers import DAUSolver, SASolver, MockSolver
+from src.model.shift import Shift
+from src.algorithms.solvers import DAUSolver, SASolver, MockSolver
 from src.model.data_adapter import DataAdapter
 
 import pandas as pd
@@ -49,7 +50,7 @@ class WorkingArea(QWidget):
         self.initUI()
 
         if shift_id is not None:
-            self.table.loadDataFrame(DataAdapter().loadShift(self.shift_id))
+            self.table.loadDataFrame(DataAdapter().loadShift(self.shift_id).getShift())
 
     def initUI(self):
         """
@@ -108,13 +109,6 @@ class WorkingArea(QWidget):
 
         self.table.createShiftTable(number_of_people, days=number_of_days)
     
-    # def loadShift(self, shift_id):
-    #     self.shift_id = shift_id
-    #     data = DataAdapter().loadShift(shift_id)
-    #     # self.parameters = data['parameters']
-    #     # self.form.loadParametersFromDataFrame(pd.DataFrame(self.parameters))
-    #     self.table.loadDataFrame(data)
-
 
     def runTrigger(self):
         content = self.table.getContent()
@@ -146,15 +140,20 @@ class WorkingArea(QWidget):
 
     def finishRunningSlot(
             self,
-            shift: pd.DataFrame):
-        # print("finishRunningSlot")
-        # print(id(self.table))
-        self.table.loadDataFrame(shift)
-        data = {
-            "shift_id": self.shift_id,
-            "parameters" : self.parameters,
-            "shift": shift
+            tables: list):
+
+        shift_configuration = {
+            "days" : self.parameters['days'],
+            "number_of_workers" : self.parameters['number_of_workers'],
+            "computation_time" : self.parameters['computation_time'],
+            "constraints" : self.parameters['constraints'],
+            "reserved_leave" : self.parameters['reserved_leave'],
+            "type" : self.parameters['type'],
+            "name_list" : self.table.getNameList()
         }
-        print(self.user.getUsername())
-        DataAdapter().saveShift(self.user, data)
+
+        self.shift = Shift(self.shift_id, shift_configuration, tables=tables) 
+        self.table.loadDataFrame(self.shift.getShift())
+
+        DataAdapter().saveShift(self.user, self.shift)
         self.form.runbutton.setDisabled(False)
