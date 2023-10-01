@@ -26,6 +26,7 @@ from src.ui.table_widget import TableWidget
 from src.ui.shift_table import ShiftTable
 from src.ui.parameters_form import ParametersForm
 from src.ui.tabs import Tabs
+from src.model.data_adapter import DataAdapter
 
 
 
@@ -48,7 +49,7 @@ class MainWindow(QMainWindow):
     This class is used to create the main window of the application.
     """
 
-    def __init__(self, Configuration, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -89,10 +90,11 @@ class MainWindow(QMainWindow):
         self.login_dialog.exec()
         
         # if the user cancels the login dialog, close the application
-        if self.login_dialog.getUser() is None:
+        self.user = self.login_dialog.getUser()
+        if self.user is None:
             quit()
 
-        self.configuration = Tabs(Configuration)
+        self.configuration = Tabs(self.user)
         self.setCentralWidget(self.configuration)
 
     def saveFile(self):

@@ -1,4 +1,10 @@
 from PySide6.QtWidgets import (QWidget, QTabWidget, QVBoxLayout)
+from src.model.user import User
+from src.model.data_adapter import DataAdapter
+
+from .working_area import WorkingArea
+
+
 
 class Tabs(QWidget):
     """
@@ -29,49 +35,58 @@ class Tabs(QWidget):
     tabs = []
     names = []
 
-    def __init__(self, configurationType: QWidget):
+    def __init__(self, user:User):
         """
         This is the constructor of the Tabs class. It calls the constructor of the QWidget class.
         You can specify the type of the tab by setting the configurationType argument.
 
         """
         super().__init__()
-
+        self.user = user
         self.number_of_untitled_tabs = 0  # FIXME: deprecated
 
-        self.configuration_type = configurationType
+        # self.initUI()
 
-        self.initUI()
-
-    def initUI(self):
-        """
-        This method initializes the ui and creates the tab widget.
-        """
         self.tabwidget = QTabWidget()
-
-        self.addANewTab()
-
+        shift_ids = user.getShifts()
+        if len(shift_ids) == 0:
+            self.addANewTab()
+        else:
+            for shift_id in shift_ids:
+                self.addANewTab(shift_id)
         vbox = QVBoxLayout()
         vbox.addWidget(self.tabwidget)
-
         self.setLayout(vbox)
 
-    def addANewTab(self):
+    # def initUI(self):
+    #     """
+    #     This method initializes the ui and creates a tab widget.
+    #     """
+    #     self.tabwidget = QTabWidget()
+
+    #     # self.addANewTab()
+
+    #     vbox = QVBoxLayout()
+    #     vbox.addWidget(self.tabwidget)
+
+    #     self.setLayout(vbox)
+
+    def addANewTab(self, shift_id=None):
         """
         This method adds a new tab to the tab widget.
         """
 
         self.number_of_untitled_tabs += 1
         new_tab = self.createATab(
-            "Untitiled" + str(self.number_of_untitled_tabs))
+            "Untitiled" + str(self.number_of_untitled_tabs), shift_id)
         self.tabs.append(new_tab)
         self.tabwidget.addTab(new_tab, new_tab.name)
 
-    def createATab(self, name: str) -> QWidget:
+    def createATab(self, name: str, shift_id=None) -> QWidget:
         """
         This method creates a new tab.
         """
-        tab = self.configuration_type(name)
+        tab = WorkingArea(name, self.user, shift_id)
         return tab
 
     def switchToLastTab(self):
