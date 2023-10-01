@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
     QDialog, QFormLayout, QLineEdit, QLabel,
-    QPushButton, QVBoxLayout
+    QPushButton, QVBoxLayout, QMessageBox
 )
 
 from src.model.data_adapter import DataAdapter
@@ -37,10 +37,12 @@ class LoginDialog(QDialog):
 
         # check if the username and password are correct
         if(self._username == "" or self._password == ""):
+            self.UserNotExist()
             return 
         else:
             self.user = DataAdapter().getUser(self._username, self._password)
             if self.user is None:
+                self.UserNotExist()
                 return 
             else:
                 self.close()
@@ -54,3 +56,10 @@ class LoginDialog(QDialog):
 
     def getUser(self):
         return self.user
+    
+    def UserNotExist(self):
+        usernotexist=QMessageBox()
+        usernotexist.setWindowTitle("Warning")
+        usernotexist.setText("The user does not exist!")
+        usernotexist.setButtonText(1,"Close")
+        usernotexist.exec()
