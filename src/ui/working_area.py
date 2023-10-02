@@ -74,15 +74,8 @@ class WorkingArea(QWidget):
 
         self.generateEmptyShift()
 
-        # self.algorithm_table = AlgorithmData()
-
-        self.log = QTextEdit()
-        self.log.setReadOnly(True)
-
         layout.addWidget(self.table, 0, 0, 3, 1)
         layout.addWidget(self.form, 0, 1, 2, 2)
-        # layout.addWidget(self.algorithm_table, 1, 0)
-        # layout.addWidget(self.log, 2, 0)
 
         self.setLayout(layout)
 

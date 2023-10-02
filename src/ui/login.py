@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
 )
 
 from src.model.data_adapter import DataAdapter
+from src.model.user import User
 
 class LoginDialog(QDialog):
 
@@ -54,7 +55,7 @@ class LoginDialog(QDialog):
             "password": self._password
         }
 
-    def getUser(self):
+    def getUser(self) -> User:
         return self.user
     
     def UserNotExist(self):

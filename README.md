@@ -1,4 +1,4 @@
-# Nursing Scheduling Problem
+# Shift Schedule Builder Dekstop``
 
 ## Environment Setup
 

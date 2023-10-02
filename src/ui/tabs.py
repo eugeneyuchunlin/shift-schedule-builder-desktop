@@ -95,7 +95,7 @@ class Tabs(QWidget):
         """
         self.tabwidget.setCurrentIndex(self.number_of_untitled_tabs - 1)
 
-    def exportWorkingArea(self) -> tuple:
+    def exportWorkingArea(self):
         """
         This method exports the working area to a three dataframes.
 

@@ -18,27 +18,9 @@ from ..utility.util import getFileName
 #     pyside2-uic form.ui -o ui_form.py
 from .ui_form import Ui_MainWindow
 
-import calendar
-
 from src.ui.login import LoginDialog
 from src.ui.table_widget import TableWidget
-from src.ui.shift_table import ShiftTable
-from src.ui.parameters_form import ParametersForm
 from src.ui.tabs import Tabs
-from src.model.data_adapter import DataAdapter
-
-
-
-
-class AlgorithmData(TableWidget):
-    """
-    This class is used to create a table widget to display the algorithm data
-
-    AlgorithmData is a subclass of TableWidget class.
-    """
-
-    def __init__(self):
-        super().__init__()
 
 
 
