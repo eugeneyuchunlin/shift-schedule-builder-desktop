@@ -5,7 +5,7 @@ import struct
 import threading
 import re
 
-from route import TestRoute, Request, Response, EchoWebsocketRoute, WebSocketResponse, HttpResponse
+from .route import TestRoute, Request, Response, EchoWebsocketRoute, WebSocketResponse, HttpResponse
 
 # Define WebSocket server information
 HOST = 'localhost'

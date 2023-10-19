@@ -80,7 +80,7 @@ class Route(object):
         self.response = response
         pass
     
-    def handler(self):
+    def handle(self):
         pass
 
 

@@ -3,6 +3,7 @@
 # password: str, 
 # email: str, 
 # shifts: []
+import json
 
 class User(object):
 
@@ -50,4 +51,10 @@ class User(object):
         else:
             self.shifts.append(shift_id)
 
-    
+    def toJson(self):
+        return json.dumps({
+            'username': self.username,
+            'password': self.password,
+            'email': self.email,
+            'shifts': self.shifts
+        }, indent=4)
