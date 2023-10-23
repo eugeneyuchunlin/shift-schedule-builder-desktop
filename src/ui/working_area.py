@@ -4,7 +4,7 @@ from .shift_table import ShiftTable
 from .parameters_form import ParametersForm
 from src.model.user import User
 from src.model.shift import Shift
-from src.algorithms.solvers import DAUSolver, SASolver, MockSolver
+from src.algorithms.Solvers import DAUSolver, SASolver, MockSolver
 from src.model.data_adapter import DataAdapter
 
 import pandas as pd

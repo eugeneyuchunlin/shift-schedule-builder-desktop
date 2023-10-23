@@ -57,15 +57,14 @@ class DataAdapter(object):
 
         tables = shift['table']
         del shift['table']
-
+        del shift['_id']
         shift = Shift(shift_id=shift['shift_id'], shift_configuration=shift, tables=tables)
 
         return shift
 
     def loadShifts(self, user:User):
         # write your code here
-        shifts = []
-
+        shifts = []  
         for shift_id in user.getShifts():
             shift_df = self.loadShift(shift_id)    
             shifts.append(shift_df)

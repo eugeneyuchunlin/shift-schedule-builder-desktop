@@ -1,4 +1,5 @@
 import pandas as pd
+import json
 
 class Shift(object):
 
@@ -8,7 +9,6 @@ class Shift(object):
         self.shift = shift
         self.tables = tables
         
-
 
     def getShiftId(self):
         return self.shift_id
@@ -45,5 +45,13 @@ class Shift(object):
 
     def getTables(self):
         return self.tables
+    
+    def toJson(self):
+        data = {
+            "shift_id" : self.shift_id,
+            "configuration" : self.shift,
+            "table" : self.tables
+        }
+        return json.dumps(data)
 
     
