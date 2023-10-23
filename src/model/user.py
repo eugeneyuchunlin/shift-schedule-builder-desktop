@@ -7,11 +7,11 @@ import json
 
 class User(object):
 
-    def __init__(self, username, password, email, shifts):
-        self.username = username
-        self.password = password
-        self.email = email
-        self.shifts = shifts
+    def __init__(self, **kwargs):
+        self.username = kwargs['username']
+        self.password = kwargs['password']
+        self.email =  kwargs['email']
+        self.shifts = kwargs['shifts']
 
     def getUsername(self):
         return self.username

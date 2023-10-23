@@ -4,7 +4,8 @@ from src.server.route import Route
 from src.model.data_adapter import DataAdapter
 
 import json
-
+from src.model.user import User
+from src.model.shift import Shift
 
 mongodbDataAdapter = DataAdapter()
 
@@ -37,9 +38,10 @@ class SaveShifts(Route):
         if self.request.method == 'POST':
             body = json.loads(self.request.body)
             print(body)
-            user = User(body['user'])
+            user = User(**body['user'])
+
             shift = Shift(body['shift'])
-            
+            # print(shift.shift_id)           
             mongodbDataAdapter.saveShift(user, shift)
             self.response.send(200, 'Finish')
         else:

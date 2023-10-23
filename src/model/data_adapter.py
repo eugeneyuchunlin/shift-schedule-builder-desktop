@@ -23,12 +23,12 @@ class DataAdapter(object):
     def __init__(self):
         self.db = db_client["Test1"]
 
-    def getUser(self, username, password):
+    def getUser(self, username:str, password:str):
         user_data = self.db.Users.find_one({"username": username, "password": password})
         if user_data is None:
             return
 
-        user = User(username=user_data['username'], password=user_data['password'], email=user_data['email'], shifts=user_data['shifts'])
+        user = User(**user_data)
         return user
     
     def updateUserShifts(self, user:User):
@@ -52,13 +52,10 @@ class DataAdapter(object):
         user.addShift(shift.getShiftId())
         self.updateUserShifts(user)
     
-    def loadShift(self, shift_id) -> Shift:
+    def loadShift(self, shift_id:str) -> Shift:
         shift = self.db.Shifts.find_one({"shift_id": shift_id})
-
-        tables = shift['table']
-        del shift['table']
         del shift['_id']
-        shift = Shift(shift_id=shift['shift_id'], shift_configuration=shift, tables=tables)
+        shift = Shift(shift)
 
         return shift
 
