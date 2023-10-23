@@ -7,7 +7,7 @@ import pandas as pd
 import neal
 from copy import deepcopy
 from pyqubo import Array, Num
-from .solver import Solver
+from .Solver import Solver
 
 from src.algorithms import dau_url, dma_api_key, api_key, dau_url, MONGODB_URI, dma_url
 

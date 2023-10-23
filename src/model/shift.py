@@ -1,15 +1,13 @@
 import pandas as pd
+import json
 
 class Shift(object):
 
-    def __init__(self, shift_id, shift_configuration, shift=None, tables=None):
-        self.shift_id = shift_id
+    def __init__(self, shift_configuration):
+        self.shift_id = shift_configuration['shift_id']
         self.shift_configuration = shift_configuration
-        self.shift = shift
-        self.tables = tables
+        self.tables = shift_configuration['table']
         
-
-
     def getShiftId(self):
         return self.shift_id
     
@@ -35,15 +33,14 @@ class Shift(object):
             raise Exception("TypeError")
         self.parameters = parameters
 
-    def setShift(self, shift):
-        if(type(shift) != pd.DataFrame):
-            raise Exception("TypeError")
-        self.shift = shift
-
     def setTables(self, tables):
         self.tables = tables
 
     def getTables(self):
         return self.tables
+    
+    def toJson(self):
+        data = self.shift_configuration
+        return json.dumps(data)
 
     

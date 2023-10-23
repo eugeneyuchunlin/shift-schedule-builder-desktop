@@ -4,7 +4,7 @@ from .shift_table import ShiftTable
 from .parameters_form import ParametersForm
 from src.model.user import User
 from src.model.shift import Shift
-from src.algorithms.solvers import DAUSolver, SASolver, MockSolver
+from src.algorithms.Solvers import DAUSolver, SASolver, MockSolver
 from src.model.data_adapter import DataAdapter
 
 import pandas as pd
@@ -136,16 +136,18 @@ class WorkingArea(QWidget):
             tables: list):
 
         shift_configuration = {
+            "shift_id" : self.shift_id,
             "days" : self.parameters['days'],
             "number_of_workers" : self.parameters['number_of_workers'],
             "computation_time" : self.parameters['computation_time'],
             "constraints" : self.parameters['constraints'],
             "reserved_leave" : self.parameters['reserved_leave'],
             "type" : self.parameters['type'],
-            "name_list" : self.table.getNameList()
+            "name_list" : self.table.getNameList(),
+            "table" : tables
         }
 
-        self.shift = Shift(self.shift_id, shift_configuration, tables=tables) 
+        self.shift = Shift(shift_configuration) 
         self.table.loadDataFrame(self.shift.getShift())
 
         DataAdapter().saveShift(self.user, self.shift)
