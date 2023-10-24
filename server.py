@@ -26,22 +26,19 @@ class UpdateUserShifts(Route):
     def handle(self):
         if self.request.method == 'POST':
             body = json.loads(self.request.body)
-            user = body['user']
-            user = mongodbDataAdapter.updateUserShifts(user)
-            self.response.send(200, user.toJson(), content_type='application/json')
+            user = User(**body['user'])
+            mongodbDataAdapter.updateUserShifts(user)
+            self.response.send(200, 'Finish')
         else:
             self.response.send(400, 'Bad Request')
 
-class SaveShifts(Route):
+class SaveShift(Route):
 
     def handle(self):
         if self.request.method == 'POST':
             body = json.loads(self.request.body)
-            print(body)
             user = User(**body['user'])
-
-            shift = Shift(body['shift'])
-            # print(shift.shift_id)           
+            shift = Shift(body['shift'])         
             mongodbDataAdapter.saveShift(user, shift)
             self.response.send(200, 'Finish')
         else:
@@ -63,8 +60,8 @@ class LoadShift(Route):
 if __name__ == '__main__':
     server = ProtocolTypeRouter({
         'http': HttpServer(routes=[
-            (r'/user', GetUser), (r'/updateuser', UpdateUserShifts), 
-            (r'/saveshifts', SaveShifts), (r'/loadshift', LoadShift)
+            (r'/user', GetUser), (r'/updateusershifts', UpdateUserShifts), 
+            (r'/saveshift', SaveShift), (r'/loadshift', LoadShift)
         ])
         # 'websocket': WebSocketServer(routes=[(r'/chat', EchoWebsocketRoute)])
         })

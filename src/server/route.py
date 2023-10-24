@@ -56,7 +56,6 @@ class Request(object):
 
         self.headers = {}
         self.body = ""
-
         # Parse headers and body
         for line in request_lines[1:]:
             if line:
@@ -64,15 +63,13 @@ class Request(object):
                 self.headers[header_name] = header_value
             else:
                 # An empty line marks the end of headers and the start of the body
-                print(self.headers['Content-Length'])
                 self.body = '\r\n'.join(request_lines[request_lines.index('') + 1:])
-                print(self.body)
                 # read remaining bytes
                 if 'Content-Length' in self.headers:
                     content_length = int(self.headers['Content-Length'])
                     remaining_bytes = content_length - len(self.body)
                     self.body += self._client_socket.recv(remaining_bytes).decode('utf-8')
-
+                break
     def socket(self):
         return self._client_socket
 
