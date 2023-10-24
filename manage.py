@@ -24,7 +24,7 @@ class Handler(FileSystemEventHandler):
 
 if __name__ == '__main__':
     event_handler = Handler()
-
+    Popen(['python3', 'server.py'])
     src_observer = Observer()
     src_observer.schedule(event_handler, path='./src', recursive=True)
     src_observer.start()
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     server_observer.start()
     try:
         while True:
-            time.sleep(1)
+            time.sleep(5)
     except KeyboardInterrupt:
         server_observer.stop()
         src_observer.stop()
