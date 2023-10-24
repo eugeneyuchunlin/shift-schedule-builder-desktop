@@ -4,43 +4,60 @@ import base64
 import struct
 import threading
 import re
+import signal
+import sys
 
 from .route import TestRoute, Request, Response, EchoWebsocketRoute, WebSocketResponse, HttpResponse
 
-# Define WebSocket server information
-HOST = 'localhost'
-PORT = 8766
 
 class ProtocolTypeRouter(object):
 
     def __init__(self, protocols, bind='localhost', port=8888):
+        self.HOST = bind
+        self.PORT = port
+
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
         self._server_socket.bind((bind, port))
         self._server_socket.listen(5)
 
         self._protocols = protocols
-        pass
+
+        signal.signal(signal.SIGINT, self.shutdown)
+        signal.signal(signal.SIGTERM, self.shutdown)
+
 
     def handle(self, client_socket):
         pass
 
+    def shutdown(self, signum, frame):
+        self._server_socket.close()
+        sys.exit(0)
 
     def routing(self, client_socket):
         # if protocol is http
-        request = Request(client_socket)
-        if 'Upgrade' in request.headers and request.headers['Upgrade'] == 'websocket':
-            response = WebSocketResponse(client_socket)            
-            self._protocols['websocket'].handle(request, response)
-        else:
+        try:
+            request = Request(client_socket)
+            if 'Upgrade' in request.headers and request.headers['Upgrade'] == 'websocket':
+                response = WebSocketResponse(client_socket)            
+                self._protocols['websocket'].handle(request, response)
+            else:
+                response = HttpResponse(client_socket)
+                self._protocols['http'].handle(request, response) 
+        except Exception as e:
             response = HttpResponse(client_socket)
-            self._protocols['http'].handle(request, response) 
+            response.send(500, 'Internal Server Error')
+            raise(e)
 
-        # if protocol is websocket
-        # self._protocols['websocket'].handle(client_socket)
         pass
 
     def run(self):
+        if 'http' in self._protocols:
+            print(f"Server is running on http://{self.HOST}:{self.PORT}")
+
+        if 'websocket' in self._protocols:
+            print(f"Websocket server is running on ws://{self.HOST}:{self.PORT}")
+
         try:
             while True:
                 client_socket, addr = self._server_socket.accept()
