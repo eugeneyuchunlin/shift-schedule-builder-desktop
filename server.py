@@ -26,7 +26,7 @@ class UpdateUserShifts(Route):
     def handle(self):
         if self.request.method == 'POST':
             body = json.loads(self.request.body)
-            user = User(**body['user'])
+            user = User(**body)
             mongodbDataAdapter.updateUserShifts(user)
             self.response.send(200, 'Finish')
         else:
