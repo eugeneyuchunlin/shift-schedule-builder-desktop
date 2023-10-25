@@ -1,10 +1,10 @@
-# Shift Schedule Builder Dekstop``
+# Shift Schedule Builder Dekstop
 
 ## Environment Setup
 
 **It is highly recommended that using the virtual environment**
 
-### Setup virtual enviornment
+### Setup virtual environment
 
 ```shell=
 $> python3 -m venv [env name]
@@ -16,11 +16,11 @@ Install the required packages.
 $> python3 -m pip install -r requirements.txt
 ```
 
-
-### Compile the `form.ui` file
+## Run
 
 ```shell=
-$> pyside6-uic form.ui -o ui_form.py
+$> python3 manage.py
 ```
 
-**Remember puting the `config.yaml` file into the directory**
+
+**Remember putting the `config.yaml` file into the directory**
