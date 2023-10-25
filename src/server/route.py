@@ -35,7 +35,17 @@ class HttpResponse(Response):
 class WebSocketResponse(Response):
 
     def send(self, message):
-        response_data = struct.pack('B', 0x81) + struct.pack('B', len(message)) + message.encode('utf-8')
+        message_bytes = message.encode('utf-8')
+        message_length = len(message_bytes)
+
+        if message_length <= 125:
+            header = struct.pack('!BB', 0x81, message_length)
+        elif message_length <= 65535:
+            header = struct.pack('!BBH', 0x81, 126, message_length)
+        else:
+            header = struct.pack('!BBQ', 0x81, 127, message_length)
+
+        response_data = header + message_bytes
         self._client_socket.send(response_data)
 
 class Request(object):
@@ -95,29 +105,52 @@ class WebSocketRoute(Route):
         self._client_socket = request.socket()
 
     def _decode_websocket_data(self, data):
+        FIN = (data[0] & 0x80) == 0x80  # FIN bit
         opcode = data[0] & 0x0F
+        mask = (data[1] & 0x80) == 0x80  # Mask bit
         payload_length = data[1] & 0x7F
-        mask_key = data[2:6]
-        encoded_data = data[6:]
 
-        decoded_data = bytearray(len(encoded_data))
-        for i in range(len(encoded_data)):
-            decoded_data[i] = encoded_data[i] ^ mask_key[i % 4]
+        if payload_length == 126:
+            payload_length = struct.unpack(">H", data[2:4])[0]
+            mask_key_start = 4
+        elif payload_length == 127:
+            payload_length = struct.unpack(">Q", data[2:10])[0]
+            mask_key_start = 10
+        else:
+            mask_key_start = 2
 
-        return opcode, decoded_data
+        if mask:
+            mask_key = data[mask_key_start:mask_key_start + 4]
+            encoded_data = data[mask_key_start + 4:]
+            decoded_data = bytearray(len(encoded_data))
+            for i in range(len(encoded_data)):
+                decoded_data[i] = encoded_data[i] ^ mask_key[i % 4]
+        else:
+            # If not masked, the data is as-is
+            decoded_data = data[mask_key_start:]
 
-    def _recv(self, size=2048):
+        return FIN, opcode, decoded_data.decode('utf-8')
+
+
+    def _recv(self, size=20480):
         try:
-            data = self._client_socket.recv(size)
-            print(data)
+            data = bytearray()
+            while True:
+                chunk = self._client_socket.recv(size)
+                if not chunk:
+                    break
+                data.extend(chunk)
+                if len(chunk) < size:
+                    break
+
             if len(data) == 0:
                 self.close()
                 return None
 
-            opcode, decoded_data = self._decode_websocket_data(data)
+            FIN, opcode, decoded_data = self._decode_websocket_data(data)
 
             if opcode == 1:
-                message = decoded_data.decode('utf-8')
+                message = decoded_data
                 return message
             elif opcode == 8:
                 response_data = struct.pack('B', 0x88) + struct.pack('B', 0)
@@ -126,7 +159,6 @@ class WebSocketRoute(Route):
                 return None
         except ConnectionResetError:
             self.close()
-        
 
     def close(self):
         self._client_socket.close()

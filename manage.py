@@ -26,7 +26,7 @@ if __name__ == '__main__':
     event_handler = Handler()
     Popen(['python3', 'server.py'])
     src_observer = Observer()
-    src_observer.schedule(event_handler, path='./src', recursive=True)
+    src_observer.schedule(event_handler, path='./src/server', recursive=True)
     src_observer.start()
 
     server_observer = Observer()

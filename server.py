@@ -1,11 +1,13 @@
 from src.server.server import ProtocolTypeRouter, HttpServer, WebSocketServer
-from src.server.route import Route
+from src.server.route import Route, WebSocketRoute
 
 from src.model.data_adapter import DataAdapter
 
 import json
 from src.model.user import User
 from src.model.shift import Shift
+from src.algorithms.Solvers import SASolver, DAUSolver
+import time
 
 mongodbDataAdapter = DataAdapter()
 
@@ -57,12 +59,52 @@ class LoadShift(Route):
             self.response.send(400, 'Bad Request')
 
 
+class SolverWebsocketRoute(WebSocketRoute):
+
+    def __init__(self, request, response, solver_type):
+        super().__init__(request, response)
+        self.solver_type = solver_type
+
+    def handle(self):
+        while True:
+            received_message = self._recv()
+            if received_message is None:
+                break
+            else:
+                self.response.send("Received")
+            problem = json.loads(received_message)
+            solver = self.solver_type(problem)
+            self.response.send("Compiling...")
+            solver.compile()
+            self.response.send("Finish compiling")
+            shifts = solver.solve()
+            result = json.dumps(shifts, default=lambda o: o.__dict__, indent=4)
+            self.response.send(result)
+            self.response.send("Finish solving")
+            
+        pass
+
+class DAUWebsocketRoute(SolverWebsocketRoute):
+
+    def __init__(self, request, response):
+        super().__init__(request, response, DAUSolver)
+
+class SAWebsocketRoute(SolverWebsocketRoute):
+
+    def __init__(self, request, response):
+        super().__init__(request, response, SASolver)
+
+
+
 if __name__ == '__main__':
     server = ProtocolTypeRouter({
         'http': HttpServer(routes=[
             (r'/user', GetUser), (r'/updateusershifts', UpdateUserShifts), 
             (r'/saveshift', SaveShift), (r'/loadshift', LoadShift)
-        ])
-        # 'websocket': WebSocketServer(routes=[(r'/chat', EchoWebsocketRoute)])
+        ]),
+        'websocket': WebSocketServer(routes=[
+                (r'/dau', DAUWebsocketRoute),
+                (r'/sa', SAWebsocketRoute)
+            ])
         })
     server.run()
