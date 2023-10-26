@@ -11,7 +11,7 @@ class Handler(FileSystemEventHandler):
         if event.is_directory:
             return
         elif event.event_type == 'modified':
-            os.system('pkill -f python3 server.py')
+            os.system('pkill -f "python3 server.py"')
             print("Restarting server...")
             time.sleep(1)
             Popen(['python3', 'server.py'])
