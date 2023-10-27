@@ -58,6 +58,21 @@ class LoadShift(Route):
         else:
             self.response.send(400, 'Bad Request')
 
+class LoadShifts(Route):
+
+    def handle(self):
+        shifts_list = {'shifts_list':[]}
+        if self.request.method == 'POST':
+            body = json.loads(self.request.body)
+            user = User(**body['user'])       
+            shifts=mongodbDataAdapter.loadShifts(user)
+            for i in range(len(shifts)):
+                data_json = shifts[i].toJson()
+                shifts_list['shifts_list'].append(data_json)
+            self.response.send(200, json.dumps(shifts_list), content_type='application/json')
+        else:
+            self.response.send(400, 'Bad Request')
+
 
 class SolverWebsocketRoute(WebSocketRoute):
 
@@ -100,7 +115,8 @@ if __name__ == '__main__':
     server = ProtocolTypeRouter({
         'http': HttpServer(routes=[
             (r'/user', GetUser), (r'/updateusershifts', UpdateUserShifts), 
-            (r'/saveshift', SaveShift), (r'/loadshift', LoadShift)
+            (r'/saveshift', SaveShift), (r'/loadshift', LoadShift), 
+            (r'/abc', LoadShifts)
         ]),
         'websocket': WebSocketServer(routes=[
                 (r'/dau', DAUWebsocketRoute),
