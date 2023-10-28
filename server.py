@@ -64,10 +64,10 @@ class LoadShifts(Route):
         shifts_list = {'shifts_list':[]}
         if self.request.method == 'POST':
             body = json.loads(self.request.body)
-            user = User(**body['user'])       
-            shifts=mongodbDataAdapter.loadShifts(user)
+            user = User(**body)       
+            shifts = mongodbDataAdapter.loadShifts(user)
             for i in range(len(shifts)):
-                data_json = shifts[i].toJson()
+                data_json = shifts[i].getShiftConfiguration()
                 shifts_list['shifts_list'].append(data_json)
             self.response.send(200, json.dumps(shifts_list), content_type='application/json')
         else:

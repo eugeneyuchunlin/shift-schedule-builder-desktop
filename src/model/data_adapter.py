@@ -57,7 +57,6 @@ class DataAdapter(object):
         shift = self.db.Shifts.find_one({"shift_id": shift_id})
         del shift['_id']
         shift = Shift(shift)
-        print(shift)
         return shift
 
     def loadShifts(self, user:User):
