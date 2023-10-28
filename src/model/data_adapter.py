@@ -7,6 +7,8 @@ from pymongo.server_api import ServerApi
 from src.model import MONGODB_URI
 import pandas as pd
 import json
+import requests
+from requests.adapters import HTTPAdapter
 
 db_client = MongoClient(MONGODB_URI, server_api=ServerApi('1'))
 try:
@@ -92,17 +94,30 @@ class RemoteDataAdapter(DataAccess):
         super().__init__("Test1")
 
     def getUser(self, username:str, password:str):
-
-        pass
+        r = requests.post("http://localhost:8888/user", json={"username":username, "password":password})
+        user_data = json.loads(r.text)
+        #print(user_data)
+        user = User(**user_data)
+        return user
 
     def updateUserShifts(self, user:User):
-        pass
+        r = requests.post("http://localhost:8888/updateusershifts", json=user.data())
+        return r.text
 
     def saveShift(self, user:User, shift:Shift):
-        pass
+        r = requests.post("http://localhost:8888/saveshifts", json={'user' : user.data(), 'shift': shift.getShiftConfiguration()})
+        #user_data = json.loads(r.text)
+        #user = User(**user_data)
+        return r.text
 
     def loadShift(self, shift_id:str) -> Shift:
-        pass
+        r = requests.post("http://localhost:8888/loadshift", json={"shift_id":shift_id})
+        shift_data = json.loads(r.text)
+        print(shift_data)
+        shift = Shift(shift_data)
+        return shift
 
     def loadShifts(self, user:User):
-        pass
+        r = requests.post("http://localhost:8888/loadshifts", json=user.data())
+        shifts_data = json.loads(r.text)
+        return json.dumps(shifts_data)

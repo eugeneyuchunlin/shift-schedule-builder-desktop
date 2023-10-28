@@ -50,11 +50,14 @@ class User(object):
             pass
         else:
             self.shifts.append(shift_id)
+        
+    def data(self):
+        return {
+            'username' : self.username,
+            'password' : self.password,
+            'email' : self.email,
+            'shifts': self.shifts
+        }
 
     def toJson(self):
-        return json.dumps({
-            'username': self.username,
-            'password': self.password,
-            'email': self.email,
-            'shifts': self.shifts
-        }, indent=4)
+        return json.dumps(self.data(), indent=4)
