@@ -71,18 +71,15 @@ class SolverWebsocketRoute(WebSocketRoute):
             if received_message is None:
                 break
             else:
-                self.response.send("Received")
+                self.response.send(json.dumps({"message": "status", "status": "received"}))
             problem = json.loads(received_message)
             solver = self.solver_type(problem)
-            self.response.send("Compiling...")
+            self.response.send(json.dumps({"message": "status", "status": "compiling"}))
             solver.compile()
-            self.response.send("Finish compiling")
+            self.response.send(json.dumps({"message": "status", "status": "solving"}))
             shifts = solver.solve()
-            result = json.dumps(shifts, default=lambda o: o.__dict__, indent=4)
-            self.response.send(result)
-            self.response.send("Finish solving")
-            
-        pass
+            self.response.send(json.dumps({"message": "status", "status": "finished"}))
+            self.response.send(json.dumps({"message": "result", "result": shifts}))
 
 class DAUWebsocketRoute(SolverWebsocketRoute):
 

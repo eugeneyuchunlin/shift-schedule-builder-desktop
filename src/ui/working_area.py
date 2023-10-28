@@ -4,7 +4,7 @@ from .shift_table import ShiftTable
 from .parameters_form import ParametersForm
 from src.model.user import User
 from src.model.shift import Shift
-from src.algorithms.Solvers import DAUSolver, SASolver, MockSolver
+from src.algorithms.RemoteSolvers import RemoteDAUSolver, RemoteSASolver
 from src.model.data_adapter import DataAdapter
 
 import pandas as pd
@@ -105,19 +105,21 @@ class WorkingArea(QWidget):
 
     def runTrigger(self):
         content = self.table.getContent()
-        print(content)
         self.parameters = self.form.parameters()
         self.parameters['content'] = content
 
-        if self.parameters['type'] == 'DAU':
-            self.solver = DAUSolver(problem=self.parameters)
-        elif self.parameters['type'] == 'SA':
-            self.solver = SASolver(problem=self.parameters)
-            
-        self.solver.error.connect(self.errorHandlerSlot)
-        self.solver.finished.connect(self.finishRunningSlot)
+        if self.parameters['type'] == 'SA':
+            self.solver = RemoteSASolver()
+        else:
+            self.solver = RemoteDAUSolver()
 
-        self.solver.start()
+        self.solver.socket_connect()
+        while not self.solver.isValid():
+            pass
+        self.solver.solve(self.parameters)
+
+        # self.solver.error.connect(self.errorHandlerSlot)
+        self.solver.finished.connect(self.finishRunningSlot)
         self.form.runbutton.setDisabled(True)
 
     def errorHandlerSlot(self, alert_msg):
