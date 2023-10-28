@@ -17,12 +17,30 @@ except Exception as e:
     print(e)
 
 
+class DataAccess(object):
 
+    def __init__(self, db_name:str):
+        self.db = db_client[db_name]
 
-class DataAdapter(object):
+    def getUser(self, username:str, password:str):
+        pass
+
+    def updateUserShifts(self, user:User):
+        pass
+
+    def saveShift(self, user:User, shift:Shift):
+        pass
+
+    def loadShift(self, shift_id:str) -> Shift:
+        pass
+
+    def loadShifts(self, user:User):
+        pass
+
+class DataAdapter(DataAccess):
 
     def __init__(self):
-        self.db = db_client["Test1"]
+        super().__init__("Test1")
 
     def getUser(self, username:str, password:str):
         user_data = self.db.Users.find_one({"username": username, "password": password})
@@ -66,4 +84,25 @@ class DataAdapter(object):
             shift_df = self.loadShift(shift_id)    
             shifts.append(shift_df)
         return shifts
-    
+
+
+class RemoteDataAdapter(DataAccess):
+
+    def __init__(self):
+        super().__init__("Test1")
+
+    def getUser(self, username:str, password:str):
+
+        pass
+
+    def updateUserShifts(self, user:User):
+        pass
+
+    def saveShift(self, user:User, shift:Shift):
+        pass
+
+    def loadShift(self, shift_id:str) -> Shift:
+        pass
+
+    def loadShifts(self, user:User):
+        pass
