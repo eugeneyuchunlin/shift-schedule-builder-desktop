@@ -1,5 +1,6 @@
 import os
 import time
+import sys
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -11,7 +12,12 @@ class Handler(FileSystemEventHandler):
         if event.is_directory:
             return
         elif event.event_type == 'modified':
-            os.system('pkill -f python3 server.py')
+            # if linux
+            if sys.platform.startswith('linux'):
+                os.system('pkill -f "python3 server.py"')    
+            elif sys.platform.startswith('darwin'):
+                os.system('pkill -f python3 server.py')
+            # if macos
             print("Restarting server...")
             time.sleep(1)
             Popen(['python3', 'server.py'])

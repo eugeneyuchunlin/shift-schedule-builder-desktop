@@ -6,6 +6,7 @@ from pymongo.server_api import ServerApi
 
 from src.model import MONGODB_URI
 import pandas as pd
+import json
 
 db_client = MongoClient(MONGODB_URI, server_api=ServerApi('1'))
 try:
@@ -56,7 +57,6 @@ class DataAdapter(object):
         shift = self.db.Shifts.find_one({"shift_id": shift_id})
         del shift['_id']
         shift = Shift(shift)
-
         return shift
 
     def loadShifts(self, user:User):
@@ -65,6 +65,5 @@ class DataAdapter(object):
         for shift_id in user.getShifts():
             shift_df = self.loadShift(shift_id)    
             shifts.append(shift_df)
-
         return shifts
-
+    
