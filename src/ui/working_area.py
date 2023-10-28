@@ -6,6 +6,7 @@ from src.model.user import User
 from src.model.shift import Shift
 from src.algorithms.RemoteSolvers import RemoteDAUSolver, RemoteSASolver
 from src.model.data_adapter import DataAdapter
+from .progressbar import ProgressBar
 
 import pandas as pd
 
@@ -65,6 +66,8 @@ class WorkingArea(QWidget):
         layout = QGridLayout()
         self.table = ShiftTable()
         self.form = ParametersForm()
+        self.progress_bar = ProgressBar()
+        
         self.form.runbutton.clicked.connect(self.runTrigger)
 
         # connect the signal of edit fields
@@ -76,6 +79,7 @@ class WorkingArea(QWidget):
 
         layout.addWidget(self.table, 0, 0, 3, 1)
         layout.addWidget(self.form, 0, 1, 2, 2)
+        layout.addWidget(self.progress_bar, 2, 1, 1, 2)
 
         self.setLayout(layout)
 
@@ -104,6 +108,7 @@ class WorkingArea(QWidget):
     
 
     def runTrigger(self):
+        self.progress_bar.clearState()
         content = self.table.getContent()
         self.parameters = self.form.parameters()
         self.parameters['content'] = content
@@ -119,6 +124,7 @@ class WorkingArea(QWidget):
         self.solver.solve(self.parameters)
 
         # self.solver.error.connect(self.errorHandlerSlot)
+        self.solver.status.connect(self.progress_bar.updateProgress)
         self.solver.finished.connect(self.finishRunningSlot)
         self.form.runbutton.setDisabled(True)
 
@@ -153,4 +159,5 @@ class WorkingArea(QWidget):
         self.table.loadDataFrame(self.shift.getShift())
 
         DataAdapter().saveShift(self.user, self.shift)
+        self.solver.close()
         self.form.runbutton.setDisabled(False)
