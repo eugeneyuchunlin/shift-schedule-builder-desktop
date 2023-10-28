@@ -79,3 +79,6 @@ config.yml
 __pycache__/
 *.json
 labs/
+*.aux
+*.log
+*.gz

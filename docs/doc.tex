@@ -1,0 +1,331 @@
+\documentclass[11pt, oneside]{article}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   		% ... or a4paper or a5paper or ... 
+%\geometry{landscape}                		% Activate for rotated page geometry
+%\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}				% Use pdf, png, jpg, or eps§ with pdflatex; use eps in DVI mode
+								% TeX will automatically convert eps --> pdf in pdflatex		
+\usepackage{amssymb, paralist}
+\usepackage{verbatim}
+\usepackage[utf8]{inputenc}
+\usepackage{pmboxdraw}
+\usepackage{listings}
+\graphicspath{ {./images/} }
+
+%SetFonts
+
+\geometry{top=1.5cm}
+\title{Shift Schedule Builder Desktop - Prototype}
+\author{Yu-Chun Lin and Kuei-Ching Yang}
+%\date{}							% Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+\section{Description}
+Shift Schedule Builder Desktop is an application designed to simplify the task of shift arrangement for employees. Its primary aim is to provide a user-friendly interface that allows users to input their shift requirements and configurations easily and generate a shift that satisfies with these shift requirements as much as possible.
+
+The user can set up some basic shift parameters such as the number of days and the number of employees. The application will generate an empty shift that satisfies the basic requirement. In addition to basic shift parameters, users are able to add some shift requirements. The application provides several common shift requirements. For example, users are able to set up the expected number of working days in the given range of the shift. The application will automatically generate a schedule for them based on the given data and constraints. Since the scheduling problem is a multi-objective optimization problem, the users have to specify the weight of each constraints. If the user values a shift requirement a lot, the user has to specify bigger weight on that shift requirement.
+
+The project is developed using Python and PyQt.
+\subsection{UI Sketch}
+We developed the UI by using \textbf{PyQt}. We have set up the basic parameters such as the width and the height of the main window by using the \textbf{QtDesigner}. The user interface is designed by inheriting the \textbf{QWidget}.
+
+\subsubsection{Login}
+In the beginning, the user has to login. The login dialog inherits QDialog. The login window will collect the username and password of the user to check and set different user. The login dialog serves as a view and controller in the application. After collecting the user's information, it will send the information to the database adapter to check if the user exist or not.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.45]{login_window}
+\caption{User Interface - Login Dialog}
+\end{figure}
+
+\subsubsection{Main Window}
+There is a class MainWindow which inherits QMainWindow and creates the frame of the window. The main window enables users to create multiple shifts by adding tabs and set up the parameters. The main window is composed of several components. The UI components are shown in the figure below. The detail of the design pattern will be elaborated in the architecture design section.
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{main_window}
+\caption{User Interface - Main Window}
+\end{figure}
+
+\iffalse
+\begin{verbatim}
+.
+├── README.md
+├── app.py
+├── config.yml
+├── requirements.txt
+├── src
+│   ├── algorithms
+│   │    ...
+│   ├── model
+│   │   ...
+│   ├── ui
+│   │   ├── __init__.py
+│   │   ├── form.ui
+│   │   ├── login.py
+│   │   ├── parameters_form.py
+│   │   ├── shift_table.py
+│   │   ├── table_widget.py
+│   │   ├── tabs.py
+│   │   ├── ui.py
+│   │   ├── ui_form.py
+│   │   └── working_area.py
+│   └── utility
+│       ├── ...
+│       └── ...
+└── unittests.py
+\end{verbatim}
+\fi
+
+\subsection{Main use cases}
+\begin{compactenum}[1.]
+\item Users can login by providing their username and password.
+\item Users can set up the computation parameters such as the number of days, the number of workers, the computation time, and set up the shift requirements.
+\item Users are able to generate a shift by choosing an optimizer.
+\item Users are able to export a shift to an excel sheet.
+\end{compactenum}
+
+\section{Database design}
+The data models of the application are intricate. The database not only has to store the user’s information but also the shift data. Since users are allowed to set up multiple shift requirements, the number of the shift constraints will vary. Besides, the data size of the shift will vary based on the number of days and the number of  workers. It is intuitive to use the NoSQL database to store and load the data; thus, we choose MongoDB to store the data. The document and the data model of the application are compatible. In the database, we create two collections to store documents, one collection is Users and the other is Shifts.  The entity relationship diagram is shown below.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{ erd }
+\caption{Entity Relationship Diagram}
+\end{figure}
+
+
+\subsection{Users}
+The collection stores the basic information of a user such as username, password, email, and shifts. Here provides an example of a document. (In this prototype, we didn't use hash function to hash the password, but in the future, this feature will be added to protect user's information.)
+
+\begin{verbatim}
+[
+  {
+    _id: ObjectId("6518396323c0f9910c4fc915"),
+    username: 'admin',
+    password: 'password',
+    email: 'email@gmail.com',
+    shifts: [
+      '66d74521-6947-4cd3-b2e9-d201140893bb',
+      '0926ea12-8907-43e7-a2cb-340043eb7c12',
+      '9223cea4-69f8-4dab-8832-4b48c952d91d',
+      '0750a390-7f19-4341-9aa2-f41ccfc2c0f9'
+    ]
+  }
+]
+\end{verbatim}
+The description of those fields is as follows.
+\begin{compactenum}[1.]
+\item \_id: A unique object id which is automatically generated by the database.
+\item username : The username of the user.
+\item password: The password of the user.
+\item email: The email of the user.
+\item shifts: A nested document that stores the shift ids owned by the user. In this example, the user owns 4 shifts. The shifts id will be used to load the shifts in Shifts collection.
+\end{compactenum}
+
+\subsection{Shifts}
+The collection stores shifts' information. The shifts' information includes shift\_id, parameters, and the content of the shift. Here provides a snippet of a document in the collection.
+\begin{verbatim}
+[
+  {
+    _id: ObjectId("6519d6a87b2c1ef5a957ae5c"),
+    shift_id: '594f91af-cade-47f3-aeff-a0d461285e1a',
+    computation_time: 30,
+    constraints: [
+      {
+        name: 'expected_number_of_working_days',
+        parameters: { weight: '10', ewd: '20', days_off_index: [] }
+      },
+      {
+        name: 'expected_number_of_workers_per_shift',
+        parameters: { weight: '10', enwps: '8', days_off_index: [] }
+      },
+      {
+        name: 'consecutive_2_days_leave',
+        parameters: { weight: '10', days_off_index: [] }
+      },
+      {
+        name: 'minimum_n_days_leave_within_7_days',
+        parameters: { weight: '10', mndlw7d: '2', days_off_index: [] }
+      }
+    ],
+    days: 30,
+    name_list: [
+      'name1', 'name2',
+      'name3', 'name4',
+      'name5', 'name6',
+      'name7', 'name8',
+      'name9', 'name10'
+    ],
+    number_of_workers: 10,
+    tables: [
+      [
+        [
+          1, 1, 1, 1, 0, 0, 1, 1, 1,
+          1, 1, 0, 0, 1, 1, 1, 1, 1,
+          1, 1, 0, 0, 0, 0, 0, 1, 1,
+          1, 1, 1
+        ],
+        ...
+        [
+          1, 1, 0, 0, 1, 1, 1, 1, 1,
+          1, 0, 0, 1, 1, 1, 1, 1, 0,
+          0, 1, 1, 1, 1, 1, 1, 1, 1,
+          0, 0, 0
+        ]
+      ],
+      [
+      	[
+          1, 1, 1, 1, 0, 0, 1, 1, 1,
+          1, 1, 0, 0, 1, 1, 1, 1, 1,
+          1, 1, 0, 0, 0, 0, 0, 1, 1,
+          1, 1, 1
+        ],
+        ...
+        [
+          1, 1, 0, 0, 1, 1, 1, 1, 1,
+          1, 0, 0, 1, 1, 1, 1, 1, 0,
+          0, 1, 1, 1, 1, 1, 1, 1, 1,
+          0, 0, 1
+        ]
+
+      ]
+    ],
+    type: 'DAU'
+  }
+]
+\end{verbatim}
+\begin{compactenum}[1.]
+\item \_id: A unique object id which is automatically generated by the database.
+\item shift\_id: The id of the shift. The user entity will also store \textbf{shift\_id} in the \textbf{shifts} field.
+\item computation\_time: The computation time of the shift.
+\item constraints: The shift requirements. The field is a nested document that stores the name of the requirement and parameters.
+\item days: The number of days
+\item name\_list : The name list.
+\item number\_of\_workers: The number of workers in the shift.
+\item tables: Tables is a 3-D array which can stores multiple shifts. Each shift is a 2-D array.
+\item type: The type of optimizer that solves the shift scheduling optimization problem. The type field will either be 'SA' or 'DAU'. SA means the optimization algorithm is simulated annealing algorithm, and DAU means the problem is solved by using the digital annealing unit.
+\end{compactenum}
+\section{Architectural design}
+The scope of the application includes the user interface, database, and solvers. The user interface collects user's preference of the shift. The database stores and loads the users' information and shifts. Solvers are used to solve the optimization problem to generate the shift that satisfies the requirements as much as possible. After acquiring the solution from cloud computation or on-device computation, Solvers will return the shift back to view/controller to show on the user interface. View/controller will also store the data into the MongoDB. The following section will give details on architecture design for each component.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{arch}
+\caption{System Architecture}
+\end{figure}
+
+\subsection{UI}
+As shown in Figure 2. The main window is composed of several UI components. The relationship between each component is presented in the Figure 5.
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{ui_uml}
+\caption{UI's UML}
+\end{figure}
+\subsection{Solvers(Algorithms)}
+The shift scheduling problem is modeled by the quadratic unconstrained binary optimization (QUBO) problem. 0 represents a day off and 1 represents a working day. Once the user adds shift requirements, they implicitly formulate their QUBO problem. The QUBO problem is compiled in user's computer and solved by either the digital annealer or the simulated annealing algorithm on users' device. After the device finishes computation, the solution is then post-processed to generate the final schedule. Digital annealer is a computation service provided by Fujitsu Ltd. Digital annealer is a quantum-inspired device that is good at solving optimization problems.
+
+In this prototype, the application offers limited shift requirements for users to choose from. The available shift requirements are listed and explained in detail below. The source code of the mathematic constraints is written in this file constraints.py.
+
+Each constraint in the project represents a class. The constraint inherits a base class which is defined as follows:
+\begin{verbatim}
+class ConstraintFunction(object):
+    
+    def __init__(self, X:Array, **kwargs):
+        self._X = X
+        self._weight = float(kwargs['weight'])
+        
+    def hamiltonian(self) -> Model:
+        pass
+
+    def weighted_hamiltonian(self) -> Model:
+        return self._weight * self.hamiltonian()
+    
+    def evaluate(self, table) -> dict:
+        pass
+\end{verbatim}
+
+In the project, there are two solvers available. One is digital annealer, and the other is simulated annealing solver. The UML digram is shown in Figure 6.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.08]{solvers}
+\caption{UML of solvers}
+\end{figure}
+
+
+\subsubsection{The Expected Number of Working Days}
+This requirement could be added to define the number of working days in the shift range. Workers in the shift are expected to have equal working days. The mathematical formulation for $N$ workers and $D$ days shift is as follow:
+
+$$H = \sum_{i}^{N} \left( \sum_{j}^{D}x_{ij} - \alpha \right)^2,
+$$
+where $\alpha$ is the expected number of working days, and $H$ is the hamiltonian.
+
+\subsubsection{The Expected Number of Workers per Shift}
+
+The following constraint defines the expected number of workers in each shift. This constraint is common and used to balance the workforce and the workload each day. The constraint is modeled by summing up the variables on each shift and minus the expected number of workers and, finally, double themselves and make them quadratic. The mathematical formulation is as follows:(The situation is the same as the one used above)
+
+$$H = \sum_{j}^{D}\left( \sum_{i}^{N} - \beta\right)^2,
+$$
+
+where $\beta$ is the expected number of workers each shift.
+
+\subsubsection{Successive Shift Pair}
+
+This constraint is placed to make each worker has at least two consecutive shift. Here's the situation we don't want. The concept is shown below in regular expression form $((0|1)^*0 | 0^*)1(0^* | 0(0|1)^*)$
+
+To be simple, the mathematical formulation separates the boundary situations, $(0|1)^*01$ and $10(0|1)^*$, and the general situation, $(0|1)^*010(0|1)^*$.
+
+\subsubsection{Consecutive 2 days Leave}
+
+This is a soft constraint for days off preference. When this constraint is employed, the algorithm would try to arrange the days off together.
+
+The mathematical formulation is as follows:
+$$H = \sum_{i}^N\sum_{j}^{D-1}\left(1-x_{i,j} * x_{i,j+1}\right)$$.
+
+\subsubsection{No Consecutive 2 Days Leave}
+
+This constraint is an opposite version of the above constraint. The mathematical formulation is as follows:
+$$H = \sum_{i}^N\sum_{j}^{D-1}\left[(1-x_{i,j}) * (1 - x_{i,j+1})\right]$$.
+
+\iffalse
+\subsubsection{Shift Preference}
+
+Workers are able to set up their shift preferences. They can designate which day they want to take a day off or which day they want to work. The algorithm would try to fulfill each worker's requirement.
+
+The mathematical formulation is as follows:
+$$H = \sum_{i}^N\sum_{j}^Dx_{ij}-q_{ij}$$
+\fi
+
+
+\subsubsection{The Maximum Consecutive Shifts}
+
+The constraint set up a limit on the maximum number of consecutive shifts. 
+
+This constraint could be modeled by using the supplementary variables. However, this would result in increasing the problem scale. This technique would probably double or triple the number of original variables. Moreover, the solver, Fujitsu's digital annealer, doesn't know the meaning of each variable after compiling the solution into the accepted data; thus, after the annealing process, it would be possible to find a better solution.
+
+The digital annealer computation service offers users to post the inequality.
+
+The inequalities would be an array and append the following inequality.
+
+$$\sum_{j}^{j+\gamma + 1}x_{ij} \leq \gamma, \   \forall i\in[1, N],\  j\in [1, D-\gamma - 1]$$
+
+where $\gamma$ is the maximum consecutive shifts
+
+\subsubsection{Minimum N-days leave within 7 days}
+
+The constraint is for employees' days off welfare. The employees working in graveyard shifts need to have days off in a range.
+
+
+\subsection{Database}
+We design two models, User, Shift, and a data adapter to save and load the models between code and the documents in the MongoDB. The scope of the models is only between the controller and the data adapter. The fields in the model and the fields in the documents are nearly the same, respectively for both models. Please refer to Figure 7. for the UML of data adapter class.
+\begin{figure}
+\centering
+\includegraphics[scale=0.05]{dataadapter}
+\caption{Data Adapter UML}
+\end{figure}
+
+\section{Runnable Prototype with GUI and Video}
+https://youtu.be/uJIEUGbZPPI
+
+\end{document}  
