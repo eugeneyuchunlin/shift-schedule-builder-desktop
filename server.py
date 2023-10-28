@@ -115,8 +115,8 @@ if __name__ == '__main__':
     server = ProtocolTypeRouter({
         'http': HttpServer(routes=[
             (r'/user', GetUser), (r'/updateusershifts', UpdateUserShifts), 
-            (r'/saveshift', SaveShift), (r'/loadshift', LoadShift), 
-            (r'/abc', LoadShifts)
+            (r'/saveshift', SaveShift), (r'/loadshift$', LoadShift), 
+            (r'/loadshifts$', LoadShifts)
         ]),
         'websocket': WebSocketServer(routes=[
                 (r'/dau', DAUWebsocketRoute),
