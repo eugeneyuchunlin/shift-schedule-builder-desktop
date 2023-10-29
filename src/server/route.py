@@ -129,7 +129,7 @@ class WebSocketRoute(Route):
             # If not masked, the data is as-is
             decoded_data = data[mask_key_start:]
 
-        return FIN, opcode, decoded_data.decode('utf-8')
+        return FIN, opcode, decoded_data
 
 
     def _recv(self, size=20480):
@@ -150,7 +150,7 @@ class WebSocketRoute(Route):
             FIN, opcode, decoded_data = self._decode_websocket_data(data)
 
             if opcode == 1:
-                message = decoded_data
+                message = decoded_data.decode('utf-8')
                 return message
             elif opcode == 8:
                 response_data = struct.pack('B', 0x88) + struct.pack('B', 0)

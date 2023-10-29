@@ -8,6 +8,7 @@ import json
 class RemoteSolver(QWebSocket):
     
     finished = Signal(list)
+    status = Signal(str)
     def __init__(self, url):
         super().__init__()
         # establish connection
@@ -43,6 +44,9 @@ class RemoteSolver(QWebSocket):
         print(data)
         if "result" in data:
             self.finished.emit(data["result"]) 
+
+        elif "status" in data:
+            self.status.emit(data["status"])       
 
 
     def on_closed(self):
