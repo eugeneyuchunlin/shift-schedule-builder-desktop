@@ -5,7 +5,6 @@ from PySide6.QtGui import QColor, QFont
 
 class ProgressBar(QWidget, QObject):
 
-    stateChanged = Slot(int)
 
     def __init__(self):
         print("Progess bar init")

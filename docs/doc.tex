@@ -15,14 +15,14 @@
 %SetFonts
 
 \geometry{top=1.5cm}
-\title{Shift Schedule Builder Desktop - Prototype}
+\title{Shift Schedule Builder Desktop - Client Server}
 \author{Yu-Chun Lin and Kuei-Ching Yang}
 %\date{}							% Activate to display a given date or no date
 
 \begin{document}
 \maketitle
 \section{Description}
-Shift Schedule Builder Desktop is an application designed to simplify the task of shift arrangement for employees. Its primary aim is to provide a user-friendly interface that allows users to input their shift requirements and configurations easily and generate a shift that satisfies with these shift requirements as much as possible.
+Shift Schedule Builder Desktop is an application designed to simplify the task of shift arrangement for employees. Its primary aim is to provide a user-friendly interface that allows users to input their shift requirements and configurations easily and generate a shift that satisfies these shift requirements as much as possible.
 
 The user can set up some basic shift parameters such as the number of days and the number of employees. The application will generate an empty shift that satisfies the basic requirement. In addition to basic shift parameters, users are able to add some shift requirements. The application provides several common shift requirements. For example, users are able to set up the expected number of working days in the given range of the shift. The application will automatically generate a schedule for them based on the given data and constraints. Since the scheduling problem is a multi-objective optimization problem, the users have to specify the weight of each constraints. If the user values a shift requirement a lot, the user has to specify bigger weight on that shift requirement.
 
@@ -31,12 +31,13 @@ The project is developed using Python and PyQt.
 We developed the UI by using \textbf{PyQt}. We have set up the basic parameters such as the width and the height of the main window by using the \textbf{QtDesigner}. The user interface is designed by inheriting the \textbf{QWidget}.
 
 \subsubsection{Login}
-In the beginning, the user has to login. The login dialog inherits QDialog. The login window will collect the username and password of the user to check and set different user. The login dialog serves as a view and controller in the application. After collecting the user's information, it will send the information to the database adapter to check if the user exist or not.
+In the beginning, the user has to login. The login dialog inherits QDialog. The login window will collect the username and password of the user to check and set different user. The login dialog serves as a view and controller in the application. After collecting the user's information, it will send the information to the database adapter to check if the user exists or not.
 
 \begin{figure}[h]
 \centering
 \includegraphics[scale=0.45]{login_window}
 \caption{User Interface - Login Dialog}
+\label{uilogin}
 \end{figure}
 
 \subsubsection{Main Window}
@@ -45,6 +46,7 @@ There is a class MainWindow which inherits QMainWindow and creates the frame of 
 \centering
 \includegraphics[width=\textwidth]{main_window}
 \caption{User Interface - Main Window}
+\label{uimainwindow}
 \end{figure}
 
 \iffalse
@@ -78,20 +80,138 @@ There is a class MainWindow which inherits QMainWindow and creates the frame of 
 \fi
 
 \subsection{Main use cases}
-\begin{compactenum}[1.]
-\item Users can login by providing their username and password.
-\item Users can set up the computation parameters such as the number of days, the number of workers, the computation time, and set up the shift requirements.
-\item Users are able to generate a shift by choosing an optimizer.
-\item Users are able to export a shift to an excel sheet.
-\end{compactenum}
+
+\subsubsection{Login}
+\begin{description}
+\item[Use case:] Login
+\item[Actor:] System user
+\item[Goal:] To login the system
+\item[Overview:] When the users open the application, they have to sign in the system. 
+If they type their username and password correctly, they are able to sign in. 
+However, if they type either username or password wrong, the system will pop up a window showing a message that tells the users they failed to sign in.
+\item[Actor action:]
+\
+\begin{enumerate}
+\item user: A user types username and password
+\item user: The user click login button
+\item system: If both username and password are correct, then the system will allow user to login; otherwise, the system pop up a message that tells the user that the given information is not correct.
+\item user: If the user is fail to login, the user may click the close button to close the application; otherwise, the system will close the login dialog window and show the application's user interface.
+\end{enumerate}
+
+\item[Alternative courses:]
+\
+\begin{description}
+\item[Steps 1 and 2:] The user may click the close button to close the application.
+\end{description}
+
+\end{description}
+
+\subsubsection{Sets up shift parameters}
+\begin{description}
+\item[Use case:] Sets up shift parameters
+\item[Actor:] System user
+\item[Goal:] To sets up shift parameters
+\item[Overview:] Before the application generates a shift for the user, the user has to specify the shift paramters.
+The parameters include days, number of workers, computation time, running mode.
+\item[Actor action:]
+\
+\begin{enumerate}
+\item user: A user types number of days in the parameters form.
+\item system: The system regenerates a shift based on new parameter configuration.
+\item user: The user types number of workers in the parameter form.
+\item system: The system regenerates a shift based on new parameter configuration.
+\item user: The user types the computation time in the parameter form.
+\end{enumerate}
+
+\item[Alternative courses:]
+\
+\begin{description}
+\item[Steps 1 and 2:] The user may click the close button to close the application.
+\end{description}
+
+\end{description}
+
+\subsubsection{Sets up shift requirements}
+\begin{description}
+\item[user case:] Setup shift requirements
+\item[Actor:] System user
+\item[Goal:]To sets up shift requirements
+\item[Overview:] Before the application generates a shift for the user, the user is able to give some shift requirements.
+The available shift requirements are the expected number of working days, the expected number of workers per shift, the successive shift pair, the consecutive 2 days off,  no more than consecutive days off, the maximum number of consecutive shifts, and the minimum number of N days off within 7 days.
+\item[Actor action:]
+\
+\begin{enumerate}
+\item user: The user click one of the shift requirements.
+\item system: The system pops up a dialog to ask the user to provide the parameter of the shift requirement.
+\item user: The user provides the preferred parameters.
+\item user: The user click Add button to add the parameters.
+\end{enumerate}
+
+\item[Alternative courses]
+\
+\begin{description}
+\item[Steps 3 and 4:] The user may click the close button to close the dialog.
+\end{description}
+
+\end{description}
+
+
+\subsubsection{Generate a shift}
+\begin{description}
+\item[user case:] Generate a shift requirements
+\item[Actor:] System user
+\item[Goal:] To generate a shift
+\item[Overview:]After the user finishes sets up the parameters and requirements, the user is ready to generate a shift. The user can click the run button to start generating the shift.
+\item[Actor action:]
+\
+\begin{enumerate}
+\item user: The user click the Run button to start generating a shift.
+\item system: The run button becomes disabled and start generating a shift for the user.
+\item system: The progress bar will keep posted the status of the task.
+\item system: When finishing generating a shift, the system shows the shift on the user interface.
+\item system: The run button will be unlocked so that users is able to re-run the task.
+\end{enumerate}
+\end{description}
+%%%%
+\subsubsection{Create a new shift}
+\begin{description}
+\item[user case:] Create a new shift
+\item[Actor:] System user
+\item[Goal:] To create a new shift
+\item[Overview:] User can create a new shift by adding a tab. Each shift can be generated concurrently. 
+\item[Actor action:]
+\
+\begin{enumerate}
+\item user: The user click command+t on Mac computers or ctrl+t on windows computers.
+\item system: The create a new tab for the user.
+\end{enumerate}
+\end{description}
+%%%
+\subsubsection{Save a shift}
+\begin{description}
+\item[user case:] Save a shift
+\item[Actor:] System user
+\item[Goal:] To save a shift
+\item[Overview:]After acquiring a shift, the user is able to save his/her shift to the device.
+\item[Actor action:]
+\
+\begin{enumerate}
+\item user: The user click command+s on Mac computers or ctrl+s on windows computers.
+\item system: The system pops up a window to ask the user to input the name of the shift and the location that the user wants to store the shift.
+\item user: The user types the name and chooses a location.
+\item system: The system exports the shift of the current tab to an excel sheet with given name and to the given location.
+\end{enumerate}
+\end{description}
 
 \section{Database design}
-The data models of the application are intricate. The database not only has to store the user’s information but also the shift data. Since users are allowed to set up multiple shift requirements, the number of the shift constraints will vary. Besides, the data size of the shift will vary based on the number of days and the number of  workers. It is intuitive to use the NoSQL database to store and load the data; thus, we choose MongoDB to store the data. The document and the data model of the application are compatible. In the database, we create two collections to store documents, one collection is Users and the other is Shifts.  The entity relationship diagram is shown below.
+The data models of the application are intricate. The database not only has to store the user’s information but also the shift data. Since users are allowed to set up multiple shift requirements, the number of the shift constraints will vary. Besides, the data size of the shift will vary based on the number of days and the number of  workers. It is intuitive to use the NoSQL database to store and load the data; thus, we choose MongoDB to store the data. The document and the data model of the application are compatible. In the database, we create two collections to store documents, one collection is Users and the other is Shifts. The entity relationship diagram is shown below.
+
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{ erd }
 \caption{Entity Relationship Diagram}
+\label{erd}
 \end{figure}
 
 
@@ -206,21 +326,166 @@ The collection stores shifts' information. The shifts' information includes shif
 \item tables: Tables is a 3-D array which can stores multiple shifts. Each shift is a 2-D array.
 \item type: The type of optimizer that solves the shift scheduling optimization problem. The type field will either be 'SA' or 'DAU'. SA means the optimization algorithm is simulated annealing algorithm, and DAU means the problem is solved by using the digital annealing unit.
 \end{compactenum}
+
+\subsection{Sample Code}
+
+Since we use NoSQL database, we are only able to provide the sample code that we used to insert, search, and  update the document.
+The following code snippets are parts of class DataAdapter.
+
+\subsubsection{Search user}
+\begin{verbatim}
+user_data = self.db.Users.find_one({"username": username, "password": password})
+\end{verbatim}
+
+\subsubsection{Update user's shifts}
+The following code snippet update user's shifts by using update\_one function.
+\begin{verbatim}
+user_collection = self.db.Users
+user_collection.update_one(
+	{"username": user.getUsername()}, 
+	{"$set": {"shifts": user.getShifts()}}
+)
+\end{verbatim}
+
+\subsubsection{Save a shift}
+The following code snippet uses update\_one to save a shifts, but we set upsert=True for the case that the shift doesn't originally exist. In that case, it will insert a document.
+\begin{verbatim}
+collection = self.db.Shifts
+inserted_data = shift.getShiftConfiguration() 
+inserted_data['table'] = tables
+collection.update_one({"shift_id" : shift.getShiftId()}, {"$set": inserted_data}, upsert=True)
+\end{verbatim}
+
+\subsubsection{Load a shift}
+The following code snippet will find a shift based on given shift\_id.
+\begin{verbatim}
+shift = self.db.Shifts.find_one({"shift_id": shift_id})
+\end{verbatim}
+
 \section{Architectural design}
-The scope of the application includes the user interface, database, and solvers. The user interface collects user's preference of the shift. The database stores and loads the users' information and shifts. Solvers are used to solve the optimization problem to generate the shift that satisfies the requirements as much as possible. After acquiring the solution from cloud computation or on-device computation, Solvers will return the shift back to view/controller to show on the user interface. View/controller will also store the data into the MongoDB. The following section will give details on architecture design for each component.
+The scope of the application includes the user interface, server, database, and solvers. The user interface collects user's preference of the shift. The server components processes user's requests to load/save the data and handle the computation. The database stores and loads the users' information and shifts. Solvers are used to solve the optimization problem to generate the shift that satisfies the requirements as much as possible. After acquiring the solution from cloud computation or on-device computation, Solvers will return the shift back to view/controller to show on the user interface. In this version, solvers will use web socket to do the communication. After View/controller received the shift data, it will send the data back to server to store the data into the database. 
+
+The following section will give details on architecture design for each component.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=\textwidth]{arch}
+\includegraphics[width=\textwidth]{arch1}
 \caption{System Architecture}
+\label{sysarch}
 \end{figure}
 
+\subsection{Server}
+We developed a tiny framework that enables us to flexibly extend the function of the server. The server's architecture is as shown in Fig.~\ref{framework}
+The server is composed of two parts, a http server and a web socket server. When the server received an incoming request, the instance of \textbf{ProtocolTypeRouter} will do routing based on the request's protocol. For example, if the request is a http request, ProtocolTypeRouter will transfer the request to HttpServer. When the server received a request sent from ProtocolTypeRouter, both servers will do routing based on the request's URI to a certain route. Each route will handle the request and the response. The only things that developers have to do is to define the API endpoints and override the handle function of the corresponding Route to handle the request.
+Here provides a snippet of code that shows how to use this tiny framework.
+\begin{verbatim}
+class TestRoute(Route):
+
+    def handle(self):
+        data = {
+            "message": "successful"
+        }
+        self.response.send(200, json.dumps(data), content_type="application/json")
+
+
+class EchoWebsocketRoute(WebSocketRoute):
+
+    def handle(self):
+        while True:
+            received_message = self._recv()
+            print("Received Text: ", received_message)
+            if received_message is None:
+                break
+            else:
+                self.response.send(received_message)
+                
+if __name__ == '__main__':
+    server = ProtocolTypeRouter({
+        'http': HttpServer(routes=[(r'/', TestRoute)]),
+        'websocket': WebSocketServer(routes=[(r'/chat', EchoWebsocketRoute)])
+    })
+    server.run()
+\end{verbatim}
+We just need to inherit Route type and override handle function, and  register the Route type to the corresponding server and specify the uri.
+This enables us to easily extend the function of server. Fig.~\ref{serveruml} details the UML of the server side.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{framework}
+\caption{The architecture of the tiny framework}
+\label{framework}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{serverUML}
+\caption{The UML diagram of the server}
+\label{serveruml}
+\end{figure}
+
+\subsubsection{RemoteSolver}
+RemoteSolver is a class that establishes the web socket connection between UI and the server. 
+It also processes the message sent from the server side and connect itself and the progress bar to update the status.
+
+We wrote two remote solvers, RemoteDAUSolver and RemoteSASolver. The corresponding APIs are ws://localhost:8888/dau and ws://localhost:8888/sa. Both solvers inherit from RemoteSolver.
+When the function solve is called, it will use web socket to send the optimization problem to the server. Here provides a simple example of the data.
+The data format in the communication is in the json format.
+\begin{verbatim}
+{
+    "type": "SA",
+    "days": 30,
+    "number_of_workers": 10,
+    "computation_time": 10000,
+    "reserved_leave": [],
+    "constraints": [
+        {
+            "name": "expected_number_of_working_days",
+            "parameters": {
+                "weight": "10",
+                "ewd": "20"
+            }
+        },
+        {
+            "name": "expected_number_of_workers_per_shift",
+            "parameters": {
+                "weight": "8",
+                "enwps": "8"
+            }
+        }
+    ],
+    "content": [
+        {
+            "name": "name1",
+            "shift_array": ["0","0","1","1","0","0","1","1","1","1","1","0","0",
+            "0","1","1","0","1","1","1","1","1","0","1","1","1","1","1","1","1"
+            ]
+        },
+        {
+            "name": "name2",
+            "shift_array": [...]
+        },
+        ...
+     ]
+}
+
+\end{verbatim}
+In the server side, we defined a class SolverWebsocketRoute which inherits from WebSocketRoute. 
+The class will process the request and invoke the corresponding computation service to do the optimization problem.
+We also defined two classes that inherit from SolverWebsockeRoute, which are DAUWebsocketRoute and SAWebsocketRoute.
+Both give the computation service to the base class.
+During the computation, the server will keep UI posted the state of the computation. For example, when the problem is compiled. It will use web socket to send
+\begin{verbatim}
+{"message": "status", "status" : "compiling"}.
+\end{verbatim}
+The user interface can update the status of computation to the user.
+
 \subsection{UI}
-As shown in Figure 2. The main window is composed of several UI components. The relationship between each component is presented in the Figure 5.
+As shown in Fig.~\ref{uimainwindow}. The main window is composed of several UI components. The relationship between each component is presented in the Fig.~\ref{uiuml}.
 \begin{figure}
 \centering
 \includegraphics[width=\textwidth]{ui_uml}
 \caption{UI's UML}
+\label{uiuml}
 \end{figure}
 \subsection{Solvers(Algorithms)}
 The shift scheduling problem is modeled by the quadratic unconstrained binary optimization (QUBO) problem. 0 represents a day off and 1 represents a working day. Once the user adds shift requirements, they implicitly formulate their QUBO problem. The QUBO problem is compiled in user's computer and solved by either the digital annealer or the simulated annealing algorithm on users' device. After the device finishes computation, the solution is then post-processed to generate the final schedule. Digital annealer is a computation service provided by Fujitsu Ltd. Digital annealer is a quantum-inspired device that is good at solving optimization problems.
@@ -245,12 +510,13 @@ class ConstraintFunction(object):
         pass
 \end{verbatim}
 
-In the project, there are two solvers available. One is digital annealer, and the other is simulated annealing solver. The UML digram is shown in Figure 6.
+In the project, there are two solvers available. One is digital annealer, and the other is simulated annealing solver. The UML digram is shown in Fig.~\ref{umlsolvers}.
 
 \begin{figure}[h]
 \centering
 \includegraphics[scale=0.08]{solvers}
 \caption{UML of solvers}
+\label{umlsolvers}
 \end{figure}
 
 
@@ -318,11 +584,12 @@ The constraint is for employees' days off welfare. The employees working in grav
 
 
 \subsection{Database}
-We design two models, User, Shift, and a data adapter to save and load the models between code and the documents in the MongoDB. The scope of the models is only between the controller and the data adapter. The fields in the model and the fields in the documents are nearly the same, respectively for both models. Please refer to Figure 7. for the UML of data adapter class.
+We design two models, User, Shift, and a data adapter to save and load the models between code and the documents in the MongoDB. The scope of the models is only between the controller and the data adapter. The fields in the model and the fields in the documents are nearly the same, respectively for both models. Please refer to Fig.~\ref{dataadapteruml}. for the UML of data adapter class.
 \begin{figure}
 \centering
 \includegraphics[scale=0.05]{dataadapter}
 \caption{Data Adapter UML}
+\label{dataadapteruml}
 \end{figure}
 
 \section{Runnable Prototype with GUI and Video}

@@ -15,9 +15,7 @@ class Response(object):
         return self._client_socket
 
 class HttpResponse(Response):
-    def __init__(self, client_socket:socket.socket):
-        self._client_socket = client_socket
-        pass
+
 
     def send(self, code, message, content_type="text/html"):
         
