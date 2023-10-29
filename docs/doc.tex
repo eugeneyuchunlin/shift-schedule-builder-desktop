@@ -423,6 +423,7 @@ This enables us to easily extend the function of server. Fig.~\ref{serveruml} de
 \label{serveruml}
 \end{figure}
 
+
 \subsubsection{RemoteSolver}
 RemoteSolver is a class that establishes the web socket connection between UI and the server. 
 It also processes the message sent from the server side and connect itself and the progress bar to update the status.
@@ -477,7 +478,254 @@ During the computation, the server will keep UI posted the state of the computat
 \begin{verbatim}
 {"message": "status", "status" : "compiling"}.
 \end{verbatim}
-The user interface can update the status of computation to the user.
+The user interface can update the state of the computation to the user.
+
+\subsubsection{Data Server}
+The data server uses HTTP protocol to communicate with the user interface. 
+There are 5 APIs written in the server. 
+Each API is handled by a Route class which inherits from class Route and override the function handle.
+
+\begin{description}
+\item[Get the user]
+\
+\begin{description}
+\item[API Endpoints:] /user
+\item[Description:] Through /user URI, the server accepts the post method. The client posts username and password to the server. 
+The server will use the function getUser defined in the DataAdapter to get the user owned by the collection User. Then, the server will return the user in JSON.
+\item[Method:] POST
+\item[Example Request Data:]
+\begin{verbatim}
+{
+    "username":"admin",
+    "password":"password"
+}
+\end{verbatim}
+\item[Example Response Data:]
+\begin{verbatim}
+{
+    "username": "admin",
+    "password": "password",
+    "email": "admin@gmail.com",
+    "shifts": [
+        "10a67b34-dede-4a99-97ef-8f0b76927947"
+    ]
+}
+\end{verbatim}
+\end{description}
+
+
+
+
+
+\item[Update user shifts]
+\
+\begin{description}
+\item[API Endpoints:] /updateusershifts
+\item[Description:] Through /updateusershifts URI, the client uses the post method to send the user’s information to the server.
+The server will use the function updateUserShifts defined in the DataAdapter to update the shift\_id array which is owned by the user and stored in the collection User.
+\item[Method:] POST
+\item[Example Request Data:]
+\begin{verbatim}
+{
+        "username": "admin",
+        "password": "pasword",
+        "email": "admin@gmail.com",
+        "shifts": [
+            "10a67b34-dede-4a99-97ef-8f0b76927947",
+            "0fc9f879-b236-40c4-a6f6-b5f3d5c7ddab"
+        ]
+}
+
+\end{verbatim}
+\item[Example Response Data:]
+\begin{verbatim}
+no response data
+\end{verbatim}
+\end{description}
+
+
+
+
+
+
+\item[Save a shift]
+\
+\begin{description}
+\item[API Endpoints:] /saveshift
+\item[Description:]Through /saveshift URI, the client uses the post method to send the user’s information and the shift’s information to the server. 
+The server will use the function saveShift defined in the DataAdapter to save the parameters owned by the shift and stored in the collection Shifts.
+
+\item[Method:] POST
+\item[Example Request Data:]
+\begin{verbatim}
+{
+    "shift_id": "10a67b34-dede-4a99-97ef-8f0b76927947",
+    "computation_time": 10000,
+    "constraints": [],
+    "days": 30,
+    "name_list": [ "name1", "name2", "name3", "name4", "name5",
+        "name6", "name7", "name8", "name9",  "name10” ],
+    "number_of_workers": 10,
+    "reserved_leave": [],
+    "tables": [
+[ [ 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1,
+ 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 4 1, 1, 1 ], ...
+[ 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 
+1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0 ] ] ],
+    "type": "DAU",
+}
+\end{verbatim}
+\item[Example Response Data:]
+\begin{verbatim}
+no response data
+\end{verbatim}
+\end{description}
+
+
+
+\item[Load a shift]
+\
+\begin{description}
+\item[API Endpoints:] /loadshift
+\item[Description:]
+\item[Method:] POST
+\item[Example Request Data:]
+\begin{verbatim}
+{
+    "shift_id":"10a67b34-dede-4a99-97ef-8f0b76927947"
+}
+\end{verbatim}
+\item[Example Response Data:]
+\begin{verbatim}
+{
+    "shift_id": "10a67b34-dede-4a99-97ef-8f0b76927947",
+    "computation_time": 10000,
+    "constraints": [],
+    "days": 30,
+    "name_list": [ "name1", "name2", "name3", "name4", "name5",
+        "name6", "name7", "name8", "name9",  "name10” ],
+    "number_of_workers": 10,
+    "reserved_leave": [],
+    "tables": [
+[ [ 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1,
+ 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 4 1, 1, 1 ], ...
+[ 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 
+1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0 ] ] ],
+    "type": "DAU",
+}
+\end{verbatim}
+\end{description}
+
+
+\item[Load shifts]
+\
+\begin{description}
+\item[API Endpoints:] /loadshifts
+\item[Description:]Through /loadshifts URI, the server accepts the post method. The client posts the user’s information to the server to load all shifts for the user.
+The server will use the function loadShifts defined in the DataAdapter to get all shifts owned by the user. The function loadShifts will return a list of Shift instances. Finally, the server will convert each shift in the list to a dictionary variable and store the data in a list. Then, return the data back to the client.
+\item[Method:] POST
+\item[Example Request Data:]
+\begin{verbatim}
+{
+        "username": "admin",
+        "password": "pasword",
+        "email": "admin@gmail.com",
+        "shifts": [
+            "10a67b34-dede-4a99-97ef-8f0b76927947",
+            "0fc9f879-b236-40c4-a6f6-b5f3d5c7ddab"
+        ]
+}
+\end{verbatim}
+\item[Example Response Data:]
+\begin{verbatim}
+{
+  "shift_list":[
+{
+    "shift_id": "10a67b34-dede-4a99-97ef-8f0b76927947",
+    "computation_time": 10000,
+    "constraints": [],
+    "days": 30,
+    "name_list": [ "name1", "name2", "name3", "name4", "name5",
+        "name6", "name7", "name8", "name9",  "name10” ],
+    "number_of_workers": 10,
+    "reserved_leave": [],
+    "tables": [
+[ [ 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1,
+ 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 4 1, 1, 1 ], ...
+[ 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 
+1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0 ] ] ],
+    "type": "DAU",
+},
+{
+    "shift_id": "0fc9f879-b236-40c4-a6f6-b5f3d5c7ddab ",
+    "computation_time": 10000,
+    "constraints": [{
+                    "name": "expected_number_of_workers_per_shift",
+                    "parameters": {
+                        "weight": "20",
+                        "enwps": "10",
+                        "days_off_index": []
+                    },
+               	{
+                    "name": "no_consecutive_leave",
+                    "parameters": {
+                        "weight": "10",
+                        "days_off_index": []
+                    }
+                }
+                }
+],
+    "days": 30,
+    "name_list": [ "name1", "name2", "name3", "name4", "name5",
+        "name6", "name7", "name8", "name9",  "name10” ],
+    "number_of_workers": 10,
+    "reserved_leave": [],
+    "tables": [
+[ [ 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1,
+ 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 4 1, 1, 1 ], ...
+[ 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 
+1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0 ] ] ],
+    "type": "SA",
+}
+  ]
+}
+\end{verbatim}
+\end{description}
+
+
+
+
+\end{description}
+
+\subsection{Database}
+We design two models, User and Shift, and class DataAccess to manipulate the data in the Application.
+Class User corresponds to a document in the collection Users and class Shift corresponds to a document in the collection Shifts.
+Please refer to Fig.~\ref{dataadapteruml}. for the UML of data adapter class.
+Class DataAccess is an interface that will be implemented by both DataAdapter and RemoteDataAdapter.
+
+\subsubsection{DataAdapter}
+The DataAdapter will establish a connection to the MongoDB database. We can load and save the document into the collections. Followings describe the function defined in the class DataAdapter.
+% Things written by Gorden
+\begin{description}
+\item[getUser:]We can get the user’s information by providing the username and password to the function. The function will search the document in the collection Users with the given data. If the function successfully gets a document from the collection, it will generate an instance of class User and return the object; otherwise, return None.
+\item[updateUserShifts:]We can update the user’s information by providing the document in the collection Users to the function. The function will search and update the document in the collection Users with the given data.
+\item[saveShift:]We can update the shift’s information by providing the document in the collections Users and Shifts to the function. The function will search and update the document in the collection Shifts with the given data.
+\item[loadShift:]We can get the shift’s information by providing the shift\_id to the function. The function will search the document in the collection Shifts with the given data. If the function successfully gets a document from the collection, it will generate an instance of class Shift and return the object.
+\item[loadShifts:]We can get the several shifts’ information by providing the document in the collection Users to the function. The function will search the document in the collection Shifts with the given data. The function will get several documents from the collection and generate a list to store the documents and return the object.
+\end{description}
+
+
+\subsection{RemoteDataAdapter}
+The RemoteDataAdapter serves as a connection between user interface and the server. When the user load and save data through the 
+% Things written by Gorden
+\begin{description}
+\item[getUser:]The function will use the HTTP POST method to post the username and password, which are the parameters of the function, to the server. When the function receives the response from the server, the server will generate an instance of class User and return.
+\item[updateUserShifts:]The function will use the HTTP POST method to post the document in the collection Users, which is the parameter of the function, to the server. When the function receives the response from the server, the server will update the document in the collection Users with the given data.
+\item[saveShift:]The function will use the HTTP POST method to post the document in the collections Users and Shifts, which are the parameters of the function, to the server. When the function receives the response from the server, the server will update the document in the collection Shifts with the given data.
+\item[loadShift:]The function will use the HTTP POST method to post the shift\_id, which is the parameter of the function, to the server. When the function receives the response from the server, the server will generate an instance of class Shift and return.
+\item[loadShifts:]The function will use the HTTP POST method to post the document in the collection Users, which is the parameter of the function, to the server. When the function receives the response from the server, the server will generate a list to store the documents and return the object.
+\end{description}
+
 
 \subsection{UI}
 As shown in Fig.~\ref{uimainwindow}. The main window is composed of several UI components. The relationship between each component is presented in the Fig.~\ref{uiuml}.
@@ -583,8 +831,6 @@ where $\gamma$ is the maximum consecutive shifts
 The constraint is for employees' days off welfare. The employees working in graveyard shifts need to have days off in a range.
 
 
-\subsection{Database}
-We design two models, User, Shift, and a data adapter to save and load the models between code and the documents in the MongoDB. The scope of the models is only between the controller and the data adapter. The fields in the model and the fields in the documents are nearly the same, respectively for both models. Please refer to Fig.~\ref{dataadapteruml}. for the UML of data adapter class.
 \begin{figure}
 \centering
 \includegraphics[scale=0.05]{dataadapter}
@@ -593,6 +839,5 @@ We design two models, User, Shift, and a data adapter to save and load the model
 \end{figure}
 
 \section{Runnable Prototype with GUI and Video}
-https://youtu.be/uJIEUGbZPPI
-
+https://youtu.be/3ukQoSu0d6I
 \end{document}  

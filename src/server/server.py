@@ -86,6 +86,7 @@ class HttpServer(Server):
 
     def handle(self, request:Request, response:Response):
         # get uri of the request
+        print(f"[{request.method}]: {request.uri}")
         uri = request.uri
         for i in range(len(self._routes)):
             reg = re.compile(self._routes[i][0])

@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (
     QPushButton, QVBoxLayout, QMessageBox
 )
 
-from src.model.data_adapter import DataAdapter
+from src.model.data_adapter import RemoteDataAdapter
 from src.model.user import User
 
 class LoginDialog(QDialog):
@@ -41,7 +41,7 @@ class LoginDialog(QDialog):
             self.UserNotExist()
             return 
         else:
-            self.user = DataAdapter().getUser(self._username, self._password)
+            self.user = RemoteDataAdapter().getUser(self._username, self._password)
             if self.user is None:
                 self.UserNotExist()
                 return 

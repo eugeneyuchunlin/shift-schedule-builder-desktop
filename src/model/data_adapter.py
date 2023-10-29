@@ -13,7 +13,7 @@ from requests.adapters import HTTPAdapter
 db_client = MongoClient(MONGODB_URI, server_api=ServerApi('1'))
 try:
     db_client.admin.command("ping")
-    print("Connected to MongoDB")
+    # print("Connected to MongoDB")
 except Exception as e:
     print("Unable to connect to MongoDB")
     print(e)
