@@ -5,7 +5,7 @@ from .parameters_form import ParametersForm
 from src.model.user import User
 from src.model.shift import Shift
 from src.algorithms.RemoteSolvers import RemoteDAUSolver, RemoteSASolver
-from src.model.data_adapter import DataAdapter
+from src.model.data_adapter import RemoteDataAdapter
 from .progressbar import ProgressBar
 
 import pandas as pd
@@ -51,7 +51,7 @@ class WorkingArea(QWidget):
         self.initUI()
 
         if shift_id is not None:
-            self.table.loadDataFrame(DataAdapter().loadShift(self.shift_id).getShift())
+            self.table.loadDataFrame(RemoteDataAdapter().loadShift(self.shift_id).getShift())
 
     def initUI(self):
         """
@@ -158,6 +158,6 @@ class WorkingArea(QWidget):
         self.shift = Shift(shift_configuration) 
         self.table.loadDataFrame(self.shift.getShift())
 
-        DataAdapter().saveShift(self.user, self.shift)
+        RemoteDataAdapter().saveShift(self.user, self.shift)
         self.solver.close()
         self.form.runbutton.setDisabled(False)

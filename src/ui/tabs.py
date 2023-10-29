@@ -1,6 +1,5 @@
 from PySide6.QtWidgets import (QWidget, QTabWidget, QVBoxLayout)
 from src.model.user import User
-from src.model.data_adapter import DataAdapter
 
 from .working_area import WorkingArea
 
