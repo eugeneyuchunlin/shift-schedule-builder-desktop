@@ -94,7 +94,7 @@ However, if they type either username or password wrong, the system will pop up 
 \begin{enumerate}
 \item user: A user types username and password
 \item user: The user click login button
-\item system: If both username and password are correct, then the system will allow user to login; otherwise, the system pop up a message that tells the user that the given information is not correct.
+\item system: If both username and password are correct, then the system will allow user to login; otherwise, the system will pop up a message that tells the user that the given information is not correct.
 \item user: If the user is fail to login, the user may click the close button to close the application; otherwise, the system will close the login dialog window and show the application's user interface.
 \end{enumerate}
 
@@ -106,20 +106,20 @@ However, if they type either username or password wrong, the system will pop up 
 
 \end{description}
 
-\subsubsection{Sets up shift parameters}
+\subsubsection{Set up shift parameters}
 \begin{description}
-\item[Use case:] Sets up shift parameters
+\item[Use case:] Set up shift parameters
 \item[Actor:] System user
-\item[Goal:] To sets up shift parameters
+\item[Goal:] To set up shift parameters
 \item[Overview:] Before the application generates a shift for the user, the user has to specify the shift paramters.
-The parameters include days, number of workers, computation time, running mode.
+The parameters include days, number of workers, computation time, and running mode.
 \item[Actor action:]
 \
 \begin{enumerate}
-\item user: A user types number of days in the parameters form.
-\item system: The system regenerates a shift based on new parameter configuration.
-\item user: The user types number of workers in the parameter form.
-\item system: The system regenerates a shift based on new parameter configuration.
+\item user: A user types the number of days in the parameters form.
+\item system: The system regenerates a shift based on a new parameter configuration.
+\item user: The user types the number of workers in the parameter form.
+\item system: The system regenerates a shift based on a new parameter configuration.
 \item user: The user types the computation time in the parameter form.
 \end{enumerate}
 
@@ -141,10 +141,10 @@ The available shift requirements are the expected number of working days, the ex
 \item[Actor action:]
 \
 \begin{enumerate}
-\item user: The user click one of the shift requirements.
+\item user: The user clicks one of the shift requirements.
 \item system: The system pops up a dialog to ask the user to provide the parameter of the shift requirement.
 \item user: The user provides the preferred parameters.
-\item user: The user click Add button to add the parameters.
+\item user: The user clicks the Add button to add the parameters.
 \end{enumerate}
 
 \item[Alternative courses]
@@ -161,11 +161,11 @@ The available shift requirements are the expected number of working days, the ex
 \item[user case:] Generate a shift requirements
 \item[Actor:] System user
 \item[Goal:] To generate a shift
-\item[Overview:]After the user finishes sets up the parameters and requirements, the user is ready to generate a shift. The user can click the run button to start generating the shift.
+\item[Overview:]After the user finishes setting up the parameters and requirements, the user is ready to generate a shift. The user can click the run button to start generating the shift.
 \item[Actor action:]
 \
 \begin{enumerate}
-\item user: The user click the Run button to start generating a shift.
+\item user: The user clicks the Run button to start generating a shift.
 \item system: The run button becomes disabled and start generating a shift for the user.
 \item system: The progress bar will keep posted the status of the task.
 \item system: When finishing generating a shift, the system shows the shift on the user interface.
@@ -182,8 +182,8 @@ The available shift requirements are the expected number of working days, the ex
 \item[Actor action:]
 \
 \begin{enumerate}
-\item user: The user click command+t on Mac computers or ctrl+t on windows computers.
-\item system: The create a new tab for the user.
+\item user: The user clicks command+t on Mac computers or ctrl+t on windows computers.
+\item system: To create a new tab for the user.
 \end{enumerate}
 \end{description}
 %%%
@@ -196,7 +196,7 @@ The available shift requirements are the expected number of working days, the ex
 \item[Actor action:]
 \
 \begin{enumerate}
-\item user: The user click command+s on Mac computers or ctrl+s on windows computers.
+\item user: The user clicks command+s on Mac computers or ctrl+s on windows computers.
 \item system: The system pops up a window to ask the user to input the name of the shift and the location that the user wants to store the shift.
 \item user: The user types the name and chooses a location.
 \item system: The system exports the shift of the current tab to an excel sheet with given name and to the given location.
@@ -329,8 +329,8 @@ The collection stores shifts' information. The shifts' information includes shif
 
 \subsection{Sample Code}
 
-Since we use NoSQL database, we are only able to provide the sample code that we used to insert, search, and  update the document.
-The following code snippets are parts of class DataAdapter.
+Since we use NoSQL database, we are only able to provide the sample code that we used to insert, search, and update the document.
+The following code snippets are parts of the class DataAdapter.
 
 \subsubsection{Search user}
 \begin{verbatim}
@@ -338,7 +338,7 @@ user_data = self.db.Users.find_one({"username": username, "password": password})
 \end{verbatim}
 
 \subsubsection{Update user's shifts}
-The following code snippet update user's shifts by using update\_one function.
+The following code snippet updates user's shifts by using update\_one function.
 \begin{verbatim}
 user_collection = self.db.Users
 user_collection.update_one(
@@ -406,7 +406,7 @@ if __name__ == '__main__':
     })
     server.run()
 \end{verbatim}
-We just need to inherit Route type and override handle function, and  register the Route type to the corresponding server and specify the uri.
+We just need to inherit the Route type and override handle function, and register the Route type to the corresponding server and specify the uri.
 This enables us to easily extend the function of server. Fig.~\ref{serveruml} details the UML of the server side.
 
 \begin{figure}[h]
