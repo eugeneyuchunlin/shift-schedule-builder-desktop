@@ -353,7 +353,11 @@ The following code snippet uses update\_one to save a shifts, but we set upsert=
 collection = self.db.Shifts
 inserted_data = shift.getShiftConfiguration() 
 inserted_data['table'] = tables
-collection.update_one({"shift_id" : shift.getShiftId()}, {"$set": inserted_data}, upsert=True)
+collection.update_one(
+	{"shift_id" : shift.getShiftId()}, 
+	{"$set": inserted_data}, 
+	upsert=True
+)
 \end{verbatim}
 
 \subsubsection{Load a shift}
