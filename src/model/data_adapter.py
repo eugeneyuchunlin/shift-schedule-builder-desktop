@@ -84,7 +84,7 @@ class DataAdapter(DataAccess):
         shifts = []  
         for shift_id in user.getShifts():
             shift_df = self.loadShift(shift_id)    
-            shifts.append(shift_df)
+            shifts.append(shift_df.getShiftConfiguration())
         return shifts
 
 
@@ -96,7 +96,6 @@ class RemoteDataAdapter(DataAccess):
     def getUser(self, username:str, password:str):
         r = requests.post("http://localhost:8888/user", json={"username":username, "password":password})
         user_data = json.loads(r.text)
-        #print(user_data)
         user = User(**user_data)
         return user
 
@@ -106,8 +105,6 @@ class RemoteDataAdapter(DataAccess):
 
     def saveShift(self, user:User, shift:Shift):
         r = requests.post("http://localhost:8888/saveshifts", json={'user' : user.data(), 'shift': shift.getShiftConfiguration()})
-        #user_data = json.loads(r.text)
-        #user = User(**user_data)
         return r.text
 
     def loadShift(self, shift_id:str) -> Shift:
