@@ -82,3 +82,4 @@ labs/
 *.aux
 *.log
 *.gz
+docs/*.out
