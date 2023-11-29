@@ -10,6 +10,7 @@ from src.algorithms.Solvers import SASolver, DAUSolver
 import time
 
 mongodbDataAdapter = DataAdapter()
+redisDataAdapter = DataAdapter()
 
 class GetUser(Route):
 
@@ -18,7 +19,8 @@ class GetUser(Route):
             body = json.loads(self.request.body)
             username = body['username']
             password = body['password']
-            user = mongodbDataAdapter.getUser(username, password)
+            #user = mongodbDataAdapter.getUser(username, password)
+            user = redisDataAdapter.getUser(username,password)
             self.response.send(200, user.toJson(), content_type='application/json')
         else:
             self.response.send(400, 'Bad Request')
@@ -29,7 +31,8 @@ class UpdateUserShifts(Route):
         if self.request.method == 'POST':
             body = json.loads(self.request.body)
             user = User(**body)
-            mongodbDataAdapter.updateUserShifts(user)
+            #mongodbDataAdapter.updateUserShifts(user)
+            redisDataAdapter.updateUserShifts(user)
             self.response.send(200, 'Finish')
         else:
             self.response.send(400, 'Bad Request')

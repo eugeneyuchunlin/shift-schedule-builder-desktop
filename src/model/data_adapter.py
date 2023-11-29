@@ -1,6 +1,7 @@
 from .user import User
 from .shift import Shift
 
+import redis
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
@@ -9,6 +10,12 @@ import pandas as pd
 import json
 import requests
 from requests.adapters import HTTPAdapter
+
+redis_client = redis.StrictRedis(
+                    host='redis-12297.c302.asia-northeast1-1.gce.cloud.redislabs.com',
+                    port=12297,
+                    password='W1m4qxXnWu0waZpAJqiWcWgmQFVKzejX'
+                )
 
 db_client = MongoClient(MONGODB_URI, server_api=ServerApi('1'))
 try:
@@ -45,7 +52,10 @@ class DataAdapter(DataAccess):
         super().__init__("Test1")
 
     def getUser(self, username:str, password:str):
-        user_data = self.db.Users.find_one({"username": username, "password": password})
+        redis_key = username
+        json_data = redis_client.execute_command('JSON.GET', redis_key)
+        user_data = json.loads(json_data)
+        #user_data = self.db.Users.find_one({"username": username, "password": password})
         if user_data is None:
             return
 
@@ -53,6 +63,13 @@ class DataAdapter(DataAccess):
         return user
     
     def updateUserShifts(self, user:User):
+        redis_key = user.getUsername()
+        json_data = redis_client.execute_command('JSON.GET', redis_key)
+        user_data = json.loads(json_data)
+        user_data["shifts"] = user.getShifts()
+        updated_json_data = json.dumps(user_data)
+        redis_client.execute_command('JSON.SET', redis_key, '.', updated_json_data)
+
         user_collection = self.db.Users
         user_collection.update_one({"username": user.getUsername()}, {"$set": {"shifts": user.getShifts()}})
         pass
