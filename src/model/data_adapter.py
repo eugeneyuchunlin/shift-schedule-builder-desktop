@@ -1,5 +1,6 @@
 from .user import User
 from .shift import Shift
+from .registry import Registry
 
 import redis
 from pymongo.mongo_client import MongoClient
@@ -104,6 +105,18 @@ class DataAdapter(DataAccess):
             shifts.append(shift_df.getShiftConfiguration())
         return shifts
 
+    def addRegistry(self, registry:Registry):
+        registry_collection = self.db.Registries
+        registry_collection.update_one({}, {"$set": {"FS": registry.getFS()}})
+        registry_collection.update_one({}, {"$set": {"OSC": registry.getOSC()}})
+        pass
+
+    def getRegistry(self, fs_status:str, osc_status:str):
+        registries_status = self.db.Registries.find_one({"FS": fs_status, "OSC": osc_status})
+        if registries_status is None:
+            return
+        registry = Registry(**registries_status)
+        return registry
 
 class RemoteDataAdapter(DataAccess):
 

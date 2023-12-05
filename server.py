@@ -6,6 +6,7 @@ from src.model.data_adapter import DataAdapter
 import json
 from src.model.user import User
 from src.model.shift import Shift
+from src.model.registry import Registry
 from src.algorithms.Solvers import SASolver, DAUSolver
 import time
 
@@ -73,6 +74,29 @@ class LoadShifts(Route):
             self.response.send(400, 'Bad Request')
 
 
+class AddRegistry(Route):
+
+    def handle(self):
+        if self.request.method == 'POST':
+            body = json.loads(self.request.body)
+            registry = Registry(**body)
+            mongodbDataAdapter.addRegistry(registry)
+            self.response.send(200, 'Finish')
+        else:
+            self.response.send(400, 'Bad Request')
+
+class GetRegistry(Route):
+
+    def handle(self):
+        if self.request.method == 'POST':
+            body = json.loads(self.request.body)
+            fs_status = body['FS']
+            osc_status = body['OSC']
+            registry = mongodbDataAdapter.getRegistry(fs_status, osc_status)
+            self.response.send(200, registry.toJson(), content_type='application/json')
+        else:
+            self.response.send(400, 'Bad Request')
+
 class SolverWebsocketRoute(WebSocketRoute):
 
     def __init__(self, request, response, solver_type):
@@ -112,7 +136,8 @@ if __name__ == '__main__':
         'http': HttpServer(routes=[
             (r'/user', GetUser), (r'/updateusershifts', UpdateUserShifts), 
             (r'/saveshift', SaveShift), (r'/loadshift$', LoadShift), 
-            (r'/loadshifts$', LoadShifts)
+            (r'/loadshifts$', LoadShifts),
+            (r'/registry/add', AddRegistry),(r'/registry/get', GetRegistry)
         ]),
         'websocket': WebSocketServer(routes=[
                 (r'/dau', DAUWebsocketRoute),
