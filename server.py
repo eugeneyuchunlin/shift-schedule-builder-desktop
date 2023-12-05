@@ -85,14 +85,15 @@ class AddRegistry(Route):
         else:
             self.response.send(400, 'Bad Request')
 
-class GetRegistry(Route):
+class GetHealthCheck(Route):
 
     def handle(self):
         if self.request.method == 'POST':
-            body = json.loads(self.request.body)
-            fs_status = body['FS']
-            osc_status = body['OSC']
-            registry = mongodbDataAdapter.getRegistry(fs_status, osc_status)
+            #body = json.loads(self.request.body)
+            #fs_status = body['FS']
+            #osc_status = body['OSC']
+            #registry = mongodbDataAdapter.getHealthCheck(fs_status, osc_status)
+            registry = mongodbDataAdapter.getHealthCheck()
             self.response.send(200, registry.toJson(), content_type='application/json')
         else:
             self.response.send(400, 'Bad Request')
@@ -137,7 +138,7 @@ if __name__ == '__main__':
             (r'/user', GetUser), (r'/updateusershifts', UpdateUserShifts), 
             (r'/saveshift', SaveShift), (r'/loadshift$', LoadShift), 
             (r'/loadshifts$', LoadShifts),
-            (r'/registry/add', AddRegistry),(r'/registry/get', GetRegistry)
+            (r'/registry/add', AddRegistry),(r'/gethealthcheck', GetHealthCheck)
         ]),
         'websocket': WebSocketServer(routes=[
                 (r'/dau', DAUWebsocketRoute),

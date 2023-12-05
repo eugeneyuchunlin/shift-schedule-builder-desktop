@@ -111,10 +111,14 @@ class DataAdapter(DataAccess):
         registry_collection.update_one({}, {"$set": {"OSC": registry.getOSC()}})
         pass
 
-    def getRegistry(self, fs_status:str, osc_status:str):
-        registries_status = self.db.Registries.find_one({"FS": fs_status, "OSC": osc_status})
-        if registries_status is None:
-            return
+    #def getHealthCheck(self, fs_status:str, osc_status:str):
+    #    registries_status = self.db.Registries.find_one({"FS": fs_status, "OSC": osc_status})
+    #    if registries_status is None:
+    #        return
+    #    registry = Registry(**registries_status)
+    #    return registry
+    def getHealthCheck(self):
+        registries_status = self.db.Registries.find_one()
         registry = Registry(**registries_status)
         return registry
 
