@@ -107,20 +107,23 @@ class DataAdapter(DataAccess):
 
     def addRegistry(self, registry:Registry):
         registry_collection = self.db.Registries
-        registry_collection.update_one({}, {"$set": {"FS": registry.getFS()}})
-        registry_collection.update_one({}, {"$set": {"OSC": registry.getOSC()}})
+        registry_collection.update_one({"service": registry.getService()}, {"$set": {"status": registry.getStatus()}})
         pass
 
-    #def getHealthCheck(self, fs_status:str, osc_status:str):
-    #    registries_status = self.db.Registries.find_one({"FS": fs_status, "OSC": osc_status})
-    #    if registries_status is None:
-    #        return
-    #    registry = Registry(**registries_status)
-    #    return registry
+    def deleteRegistry(self, registry:Registry):
+        registry_collection = self.db.Registries
+        registry_collection.update_one({"service": registry.getService()}, {"$set": {"status": registry.getStatus()}})
+        pass
+
     def getHealthCheck(self):
-        registries_status = self.db.Registries.find_one()
-        registry = Registry(**registries_status)
-        return registry
+        registries=[]
+        registry_FS_data = self.db.Registries.find_one({"service": "FS"})
+        del registry_FS_data['_id']
+        registry_OSC_data = self.db.Registries.find_one({"service": "OSC"})
+        del registry_OSC_data['_id']
+        registries.append(registry_FS_data)
+        registries.append(registry_OSC_data)
+        return registries
 
 class RemoteDataAdapter(DataAccess):
 

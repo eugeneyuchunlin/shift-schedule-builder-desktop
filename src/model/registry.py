@@ -7,29 +7,29 @@ import json
 class Registry(object):
 
     def __init__(self, **kwargs):
-        self.fs_status = kwargs['FS']
-        self.osc_status = kwargs['OSC']
+        self.service = kwargs['service']
+        self.status = kwargs['status']
 
-    def getFS(self):
-        return self.fs_status
+    def getService(self):
+        return self.service
 
-    def getOSC(self):
-        return self.osc_status
+    def getStatus(self):
+        return self.status
 
-    def setFS(self, fs_status):
-        if(type(fs_status) != str):
+    def setService(self, service):
+        if(type(service) != str):
             raise Exception("TypeError")
-        self.fs_status = fs_status
+        self.service = service
 
-    def setOSC(self, osc_status):
-        if(type(osc_status) != str):
+    def setStatus(self, status):
+        if(type(status) != str):
             raise Exception("TypeError")
-        self.password = osc_status
+        self.status = status
         
     def data(self):
         return {
-            'FS' : self.fs_status,
-            'OSC' : self.osc_status,
+            'service' : self.service,
+            'status' : self.status,
         }
 
     def toJson(self):
