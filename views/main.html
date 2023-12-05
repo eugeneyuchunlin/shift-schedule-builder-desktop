@@ -21,10 +21,6 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        #configArea {
-            
-        }
-
         #parameters{
             width: 300px;
             margin: 30px auto;
@@ -162,7 +158,8 @@
             margin: 10% auto;
             padding: 20px;
             border: 1px solid #888;
-            width: 80%;
+            width: 40%;
+            border-radius: .5rem;
         }
 
         .close {
@@ -212,6 +209,13 @@
             background-color: rgb(230, 230, 230);
         }
 
+        /* .headcol{ */
+            /* position: sticky; */
+            /* left: 0; */
+            /* width: 3rem; */
+            /* z-index: 1; */
+        /* } */
+
     </style>
 </head>
 <body>
@@ -260,6 +264,7 @@
                 </select>
 
                 <button class="primary-btn" onclick="updateSchedule()">Update Schedule</button>
+                <button class="primary-btn" onclick="generateAShift()">Generate A Shift</button>
             </div>
             
             <div id="tagBox" class="floatCard">
@@ -267,63 +272,164 @@
                     <span>Shift requirements</span>
                 </div>
                 <div id="tagList">
-                    <div class="tag" onClick='openModal("enowd")'>
+                    
+                    <div class="tag" onClick='openModal("expected_number_of_working_days-modal")'>
                         <span class="text">Expected number of working days</span>
                         <button class="tag_button">
                             <!-- <Image src="/add.svg" width={10} height={10} alt="add" /> -->
                         </button>
                     </div>
-                    <div id="enowd" class="modal">
+                    <div id="expected_number_of_working_days-modal" class="modal">
                         <div class="modal-content">
-                            <span class="close" onclick='closeModal("enowd")'>&times;</span>
-                            <p>This is a modal. You can add more content here.</p>
+                            <span class="close" onclick='closeModal("expected_number_of_working_days-modal")'>&times;</span>
+                            <p>The number of working days that the employee is expected to work in a month.</p>
+                            <label for="ewd">Expected number of working days</label>
+                            <input type="number" id="ewd" name="ewd">
+
+                            <label for="expected_number_of_working_days-weight">Weight</label>
+                            <input type="number" id="expected_number_of_working_days-weight" name="weight">
+
+                            <button class="primary-btn" onClick="addParameters('expected_number_of_working_days')">Add</button>
                         </div>
                     </div>
 
-                    <div class="tag" onClick={handleClick}>
+
+
+                    <div class="tag" onClick="openModal('expected_number_of_workers_per_shift-modal')">
                         <span class="text">Expected number of workers per shift</span>
                         <button class="tag_button">
                             <!-- <Image src="/add.svg" width={10} height={10} alt="add" /> -->
                         </button>
                     </div>
-                    <div class="tag" onClick={handleClick}>
+                    <div id="expected_number_of_workers_per_shift-modal" class="modal">
+                        <div class="modal-content">
+                            <span class="close" onclick='closeModal("expected_number_of_workers_per_shift-modal")'>&times;</span>
+                            <p>The number of workers that are expected to work in a shift.</p>
+                            <label for="enwps">Expected number of workers per shift</label>
+                            <input type="number" id="enwps" name="enwps">
+
+                            <label for="expected_number_of_workers_per_shift-weight">Weight</label>
+                            <input type="number" id="expected_number_of_workers_per_shift-weight" name="weight">
+
+                            <button class="primary-btn" onclick="addParameters('expected_number_of_workers_per_shift')">Add</button>
+                        </div>
+                    </div>
+
+
+                    <div class="tag" onClick="openModal('maximum_consecutive_working_days-modal')">
                         <span class="text">Maximum consecutive working days</span>
                         <button class="tag_button">
                             <!-- <Image src="/add.svg" width={10} height={10} alt="add" /> -->
                         </button>
                     </div>
-                    <div class="tag" onClick={handleClick}>
+                    <div id="maximum_consecutive_working_days-modal" class="modal">
+                        <div class="modal-content">
+                            <span class="close" onclick='closeModal("maximum_consecutive_working_days-modal")'>&times;</span>
+                            <p>The maximum number of consecutive working days. 
+                                For example, set the maximum consecutive working days is 5. 
+                                The algorithm would try to avoid arranging the employee to work for more than 5 consecutive days.
+                            </p>
+                            <label for="mcwd">Maximum consecutive working days</label>
+                            <input type="number" id="mcwd" name="mcwd">
+
+                            <label for="maximum_consecutive_working_days-weight">Weight</label>
+                            <input type="number" id="maximum_consecutive_working_days-weight" name="weight">
+
+                            <button class="primary-btn" onclick="addParameters('maximum_consecutive_working_days')">Add</button>
+                        </div>
+                    </div>
+
+
+
+                    <div class="tag" onClick="openModal('minimum_n_days_leave_within_7_days-modal')">
                         <span class="text">Minimum n-days leave within 7-days</span>
                         <button class="tag_button">
                             <!-- <Image src="/add.svg" width={10} height={10} alt="add" /> -->
                         </button>
                     </div>
+                    <div id="minimum_n_days_leave_within_7_days-modal" class="modal">
+                        <div class="modal-content">
+                            <span class="close" onclick='closeModal("minimum_n_days_leave_within_7_days-modal")'>&times;</span>
+                            <p>The minimum number of days that the employee is expected to take leave within 7 days.
+                                For example, set the minimum n-days leave within 7-days is 2. The employee would have at least 2 leave days within 7 days.
+                            </p>
+                            <label for="mndlw7d">Maximum consecutive working days</label>
+                            <input type="number" id="mndlw7d" name="mndlw7d">
 
-                    <div class="tag" onClick={handleClick}>
+                            <label for="minimum_n_days_leave_within_7_days-weight">Weight</label>
+                            <input type="number" id="minimum_n_days_leave_within_7_days-weight" name="weight">
+
+                            <button class="primary-btn" onclick="addParameters('minimum_n_days_leave_within_7_days')">Add</button>
+                        </div>
+                    </div>
+
+
+
+                    <div class="tag" onClick="openModal('successive_shift_pair-modal')">
                         <span class="text">Successive Shift Pair</span>
                         <button class="tag_button">
                             <!-- <Image src="/add.svg" width={10} height={10} alt="add" /> -->
                         </button>
                     </div>
+                    <div id="successive_shift_pair-modal" id="successive_shift_pair" class="modal">
+                        <div class="modal-content">
+                            <span class="close" onclick='closeModal("successive_shift_pair-modal")'>&times;</span>
+                            <p>The successive shift pair constraint is for the employee who likes to work on consecutive days
+                            </p>
 
-                    <div class="tag" onClick={handleClick}>
+                            <label for="successive_shift_pair-weight">Weight</label>
+                            <input type="number" id="successive_shift_pair-weight" name="weight">
+
+                            <button class="primary-btn" onclick="addParameters('successive_shift_pair')">Add</button>
+                        </div>
+                    </div>
+
+
+
+                    <div class="tag" onClick="openModal('consecutive_2_days_leave-modal')">
                         <span class="text">Consecutive Leave</span>
                         <button class="tag_button">
                             <!-- <Image src="/add.svg" width={10} height={10} alt="add" /> -->
                         </button>
                     </div>
+                    <div id="consecutive_2_days_leave-modal" id="consecutive_2_days_leave" class="modal">
+                        <div class="modal-content">
+                            <span class="close" onclick='closeModal("consecutive_2_days_leave-modal")'>&times;</span>
+                            <p>The algorithm would try to arrange the employee to take consecutive days leave.
+                            </p>
 
-                    <div class="tag" onClick={handleClick}>
+                            <label for="consecutive_2_days_leave-weight">Weight</label>
+                            <input type="number" id="consecutive_2_days_leave-weight" name="weight">
+
+                            <button class="primary-btn" onclick="addParameters('consecutive_2_days_leave')">Add</button>
+                        </div>
+                    </div>
+
+
+
+
+                    <div class="tag" onClick="openModal('no_consecutive_leave-modal')">
                         <span class="text">No consecutive leave</span>
                         <button class="tag_button">
                             <!-- <Image src="/add.svg" width={10} height={10} alt="add" /> -->
                         </button>
                     </div>
+                    <div id="no_consecutive_leave-modal" id="no_consecutive_leave" class="modal">
+                        <div class="modal-content">
+                            <span class="close" onclick='closeModal("no_consecutive_leave-modal")'>&times;</span>
+                            <p>The shift would try not to arange the employee to take consecutive leave days.
+                            </p>
+
+                            <label for="no_consecutive_leave-weight">Weight</label>
+                            <input type="number" id="no_consecutive_leave-weight" name="weight">
+
+                            <button class="primary-btn" onclick="addParameters('no_consecutive_leave')">Add</button>
+                        </div>
+                    </div>
 
                 </div>
             </div>
         </div>
-        
     </div>
 
     <script>
@@ -369,6 +475,50 @@
     <script>
         var all_shifts = [];
         var current_shift = null;
+ 
+        function deleteParameters(name){
+            for(var i = 0; i < all_shifts[current_shift]['constraints'].length; ++i){
+                if(all_shifts[current_shift]['constraints'][i]['name'] === name){
+                    all_shifts[current_shift]['constraints'].splice(i, 1);
+                    break;
+                }
+            }
+        }
+
+        function addParameters(name){
+            var modal = document.getElementById(name+"-modal");
+            var parameter_inputs = modal.getElementsByTagName('input')
+            var constraint = {}
+            constraint.name = name;
+            constraint.parameters = {}
+            for(var i = 0; i < parameter_inputs.length; ++i){
+                constraint.parameters[parameter_inputs[i].name] = parameter_inputs[i].value;
+            }
+            deleteParameters(name);
+            all_shifts[current_shift]['constraints'].push(constraint);
+            closeModal(name+"-modal");
+        }
+       
+        function generateAShift(){
+            data = {}
+            data['type'] = document.getElementById('computationMode').value;
+            data['days'] = Number(document.getElementById('numDays').value);
+            data['number_of_workers'] = Number(document.getElementById('numEmployees').value);
+            data['computation_time'] = Number(document.getElementById('numComputationTime').value);
+            data['reserved_leave'] = []
+            data['constraints'] = all_shifts[current_shift]['constraints']
+            data['content'] = []
+            for(var i = 0; i < all_shifts[current_shift]['table'][0].length; ++i){
+                data['content'].push({
+                    'name' : all_shifts[current_shift]['name_list'][i],
+                    'shift_array' : []
+                })
+                for(var j = 0; j < all_shifts[current_shift]['table'][0][i].length; ++j){
+                    data['content'][i]['shift_array'].push(all_shifts[current_shift]['table'][0][i][j])
+                }
+            }
+            console.log(data)
+        }
 
 
         function newTab(){
@@ -387,6 +537,7 @@
                 'days': 0,
                 'number_of_workers': 0,
                 'computation_time': 0,
+                'constraints': [],
                 'type': 'SA'
             });
             current_shift = all_shifts.length - 1;
@@ -411,17 +562,16 @@
         }
 
         function setUpAShift(index){
-            console.log(index);
             current_shift = index;
             var shift = all_shifts[index];
             var table = document.getElementById('shiftSchedule');
             table.innerHTML = '';
             var headerRow = table.insertRow(-1);
             headerRow.insertCell(0); // Empty cell for the top-left corner
-            console.log(shift);
             for (var i = 1; i <= shift['days']; i++) {
                 var cell = headerRow.insertCell(i);
                 cell.innerHTML = i;
+                
             }
 
             // Create rows for each employee
@@ -491,31 +641,6 @@
             var numEmployees = document.getElementById('numEmployees').value;
             var numComputationTime = document.getElementById('numComputationTime').value;
 
-            // Clear existing table
-            var table = document.getElementById('shiftSchedule');
-            table.innerHTML = '';
-
-            // Create header row
-            // var headerRow = table.insertRow(0);
-            // headerRow.insertCell(0); // Empty cell for the top-left corner
-            // for (var i = 1; i <= numDays; i++) {
-            //     var cell = headerRow.insertCell(i);
-            //     cell.innerHTML = i;
-            // }
-
-            // // Create rows for each employee
-            // for (var j = 1; j <= numEmployees; j++) {
-            //     var row = table.insertRow(j);
-            //     var nameCell = row.insertCell(0);
-            //     nameCell.innerHTML = j;
-
-            //     // Initialize shift cells
-            //     for (var k = 1; k <= numDays; k++) {
-            //         var shiftCell = row.insertCell(k);
-            //         shiftCell.innerHTML = '0';
-            //     }
-            // }
-
             // Update the shifts array
             all_shifts[current_shift]['days'] = numDays;
             all_shifts[current_shift]['number_of_workers'] = numEmployees;
@@ -527,7 +652,7 @@
             var name_list = all_shifts[current_shift]['name_list'];
             var name_list_length = Math.min(name_list.length, numEmployees);
             for(var i = name_list_length; i < numEmployees; ++i){
-                name_list.push('name ' + i);
+                name_list.push('name' + i);
             }
             all_shifts[current_shift]['name_list'] = name_list;
 
