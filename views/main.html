@@ -225,7 +225,7 @@
         <div id="shiftTable" class="floatCard">
 
             <div id="shift-tabs" class="scrollmenu">
-                <a href="#" style="width: 50px;">+</a>
+                <a style="width: 50px;" onclick="newTab()">+</a>
             </div>
               
             <table id="shiftSchedule">
@@ -256,7 +256,7 @@
 
                 <select id="computationMode">
                     <option value="SA">Simulated Annealing</option>
-                    <option value="DA">Quantum Annealing</option>
+                    <option value="DAU">Quantum Annealing</option>
                 </select>
 
                 <button class="primary-btn" onclick="updateSchedule()">Update Schedule</button>
@@ -371,48 +371,75 @@
         var current_shift = null;
 
 
+        function newTab(){
+            var tabs = document.getElementById('shift-tabs');
+            var tab = document.createElement('a');
+            tab.href = '#';
+            tab.innerHTML = 'Shift ' + (all_shifts.length);
+            tab.onclick = function () {
+                current_shift = all_shifts.length - 1;
+                setUpAShift(all_shifts.length - 1);
+            };
+            tabs.appendChild(tab);
+            all_shifts.push({
+                'name_list': [],
+                'table': [],
+                'days': 0,
+                'number_of_workers': 0,
+                'computation_time': 0,
+                'type': 'SA'
+            });
+            current_shift = all_shifts.length - 1;
+            setUpAShift(all_shifts.length - 1);    
+        }
+
+
         function setUpTabs(){
-            console.log("Setting up tabs")
-            console.log("All shifts: ", all_shifts)
             var tabs = document.getElementById('shift-tabs');
             for(var i = 0; i < all_shifts.length; ++i){
-                var tab = document.createElement('a');
-                tab.href = '#';
-                tab.innerHTML = 'Shift ' + i;
-                tab.onclick = function(){
-                    current_shift = i;
-                }
-                tabs.appendChild(tab);
-                console.log(tab)
+                (function (index) {
+                    var tab = document.createElement('a');
+                    tab.href = '#';
+                    tab.innerHTML = 'Shift ' + index;
+                    tab.onclick = function () {
+                        current_shift = index;
+                        setUpAShift(index);
+                    };
+                    tabs.appendChild(tab);
+                })(i);
             }
         }
 
         function setUpAShift(index){
+            console.log(index);
+            current_shift = index;
             var shift = all_shifts[index];
             var table = document.getElementById('shiftSchedule');
-            var headerRow = table.insertRow(0);
+            table.innerHTML = '';
+            var headerRow = table.insertRow(-1);
             headerRow.insertCell(0); // Empty cell for the top-left corner
+            console.log(shift);
             for (var i = 1; i <= shift['days']; i++) {
                 var cell = headerRow.insertCell(i);
                 cell.innerHTML = i;
             }
 
-            console.log(shift['number_of_workers'])
-            console.log(shift['table'])
             // Create rows for each employee
             for (var j = 0; j < shift['number_of_workers']; j++) {
                 var row = table.insertRow(-1);
                 var nameCell = row.insertCell(0);
                 nameCell.innerHTML = shift['name_list'][j];
                 
-                console.log(shift['days'])
                 // Initialize shift cells
                 for (var k = 0; k < shift['days']; k++) {
                     var shiftCell = row.insertCell(k+1);
                     shiftCell.innerHTML = shift['table'][0][j][k];
-                    console.log(shiftCell);
                 }
             }
+            document.getElementById('numDays').value = shift['days'];
+            document.getElementById('numEmployees').value = shift['number_of_workers'];
+            document.getElementById('numComputationTime').value = shift['computation_time'];
+            document.getElementById('computationMode').value = shift['type'];
         }
 
 
@@ -436,11 +463,8 @@
                         shifts: getCookie('shifts').split(',')
                     })
                 }).then(response => response.json()).then(data => {
-                    console.log(data);
-                    all_shifts = data['shifts_list'];
-                    console.log("First")
+                    all_shifts = data;
                 }).then(() => {
-                    console.log("Second")
                     setUpTabs();
                     setUpAShift(0);
                 });
@@ -472,25 +496,51 @@
             table.innerHTML = '';
 
             // Create header row
-            var headerRow = table.insertRow(0);
-            headerRow.insertCell(0); // Empty cell for the top-left corner
-            for (var i = 1; i <= numDays; i++) {
-                var cell = headerRow.insertCell(i);
-                cell.innerHTML = i;
+            // var headerRow = table.insertRow(0);
+            // headerRow.insertCell(0); // Empty cell for the top-left corner
+            // for (var i = 1; i <= numDays; i++) {
+            //     var cell = headerRow.insertCell(i);
+            //     cell.innerHTML = i;
+            // }
+
+            // // Create rows for each employee
+            // for (var j = 1; j <= numEmployees; j++) {
+            //     var row = table.insertRow(j);
+            //     var nameCell = row.insertCell(0);
+            //     nameCell.innerHTML = j;
+
+            //     // Initialize shift cells
+            //     for (var k = 1; k <= numDays; k++) {
+            //         var shiftCell = row.insertCell(k);
+            //         shiftCell.innerHTML = '0';
+            //     }
+            // }
+
+            // Update the shifts array
+            all_shifts[current_shift]['days'] = numDays;
+            all_shifts[current_shift]['number_of_workers'] = numEmployees;
+            all_shifts[current_shift]['computation_time'] = numComputationTime;
+            all_shifts[current_shift]['type'] = document.getElementById('computationMode').value;
+            all_shifts[current_shift]['table'] = [];
+
+            // initialize name list
+            var name_list = all_shifts[current_shift]['name_list'];
+            var name_list_length = Math.min(name_list.length, numEmployees);
+            for(var i = name_list_length; i < numEmployees; ++i){
+                name_list.push('name ' + i);
             }
+            all_shifts[current_shift]['name_list'] = name_list;
 
-            // Create rows for each employee
-            for (var j = 1; j <= numEmployees; j++) {
-                var row = table.insertRow(j);
-                var nameCell = row.insertCell(0);
-                nameCell.innerHTML = j;
-
-                // Initialize shift cells
-                for (var k = 1; k <= numDays; k++) {
-                    var shiftCell = row.insertCell(k);
-                    shiftCell.innerHTML = '0';
+            var table = [] 
+            for (var i = 0; i < numEmployees; i++) {
+                table.push([]);
+                for (var j = 0; j < numDays; j++) {
+                    table[i].push(0);
                 }
             }
+            all_shifts[current_shift]['table'].push(table);
+
+            setUpAShift(current_shift);
         }
     </script>
 
