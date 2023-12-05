@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <!-- <link rel="stylesheet" href="/static/global.css"> -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: rgba(245, 247, 250, 1) !important;
+        }
+
+        form {
+            width: 300px;
+        }
+
+        .floatCard{
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+
+        .primary-btn {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+
+        .primary-btn:hover{
+            background-color: #0056b3; 
+        }
+    </style>
+</head>
+<body>
+
+    <form id="loginForm" class="floatCard">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <button class="primary-btn" type="button" onclick="validateLogin()">Login</button>
+    </form>
+
+    <script>
+
+        // Function to set a cookie
+        function setCookie(name, value, expirationDays) {
+          const expires = new Date();
+          expires.setDate(expires.getDate() + expirationDays);
+        
+          const cookieValue = encodeURIComponent(name) + "=" + encodeURIComponent(value) + ";expires=" + expires.toUTCString() + ";path=/";
+          document.cookie = cookieValue;
+        }
+
+        // Function to get the value of a cookie
+        function getCookie(name) {
+          const decodedCookies = decodeURIComponent(document.cookie);
+          const cookiesArray = decodedCookies.split('; ');
+        
+          for (let i = 0; i < cookiesArray.length; i++) {
+            const cookie = cookiesArray[i].split('=');
+            if (cookie[0] === name) {
+              return cookie[1];
+            }
+          }
+      
+          return null;
+        }
+
+        // Function to update the value of a cookie
+        function updateCookie(name, newValue, expirationDays) {
+          if (getCookie(name) !== null) {
+            setCookie(name, newValue, expirationDays);
+            return true;
+          }
+      
+          return false; // Cookie not found
+        }
+
+        // Function to delete a cookie
+        function deleteCookie(name) {
+          document.cookie = encodeURIComponent(name) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+        }
+        window.onload = function() {
+            if(getCookie('username') !== null) {
+                window.location.href = '/shift';
+            }
+        }
+
+        // Example usage:
+        // Set a cookie with the name "user_id" and value "12345" that expires in 1 day
+//         setCookie("user_id", "12345", 1);
+//         
+//         // Get the value of the "user_id" cookie
+//         const userId = getCookie("user_id");
+//         console.log("User ID:", userId);
+//         
+//         // Update the value of the "user_id" cookie to "updated_value" with a new expiration of 2 days
+//         const updated = updateCookie("user_id", "updated_value", 2);
+//         console.log("Cookie updated:", updated);
+//         
+//         // Delete the "user_id" cookie
+//         deleteCookie("user_id");
+//         console.log("Cookie deleted");
+// 
+
+
+        function validateLogin() {
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+
+            // Simple validation, you should implement more secure methods in a real application
+            // if (username === 'your_username' && password === 'your_password') {
+            //     alert('Login successful!');
+            // } else {
+            //     alert('Invalid username or password. Please try again.');
+            // }
+
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            }).then(response => response.json()).then(data => {
+                console.log(data);
+                if(data.message === 'successful') {
+                    setCookie('username', data.data.username, 1);
+                    setCookie('shifts', data.data.shifts, 1);
+                    window.location.href = '/shift';
+                } else {
+                    alert('Invalid username or password. Please try again.');
+                }
+            });
+            
+        }
+    </script>
+
+</body>
+</html>

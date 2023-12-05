@@ -8,8 +8,28 @@ from src.model.user import User
 from src.model.shift import Shift
 from src.algorithms.Solvers import SASolver, DAUSolver
 import time
+from os import path
 
 mongodbDataAdapter = DataAdapter()
+
+class Login(Route):
+
+    def handle(self):
+        if self.request.method == 'POST':
+            body = json.loads(self.request.body)
+            username = body['username']
+            password = body['password']
+            user = mongodbDataAdapter.getUser(username, password)
+            if user is None:
+                self.response.send(400, json.dumps({"message" : "failed"}), content_type='application/json')
+            else:
+                data = {
+                    "username": user.username,
+                    "shifts": user.shifts
+                }
+                self.response.send(200, json.dumps({"message": "successful", "data" : data}), content_type='application/json')
+        else:
+            self.response.send(400, 'Bad Request')
 
 class GetUser(Route):
 
@@ -64,6 +84,7 @@ class LoadShifts(Route):
         shifts_list = {'shifts_list':[]}
         if self.request.method == 'POST':
             body = json.loads(self.request.body)
+            print(body)
             user = User(**body)       
             shifts = mongodbDataAdapter.loadShifts(user)
             for i in range(len(shifts)):
@@ -72,6 +93,27 @@ class LoadShifts(Route):
             self.response.send(200, json.dumps(shifts_list), content_type='application/json')
         else:
             self.response.send(400, 'Bad Request')
+
+class LoginPage(Route):
+
+    def handle(self):
+        # serve the index.html file
+        with open('./views/login.html', 'r') as f:
+            self.response.send(200, f.read(), content_type='text/html')
+
+
+class MainPage(Route):
+    
+    def handle(self):
+        with open('./views/main.html', 'r') as f:
+            self.response.send(200, f.read(), content_type='text/html')
+        pass
+
+class StaticFile(Route):
+    def handle(self):
+        with open(f'.{self.request.uri}', 'r') as f:
+            self.response.send(200, f.read(), content_type='text/css')
+    pass 
 
 
 class SolverWebsocketRoute(WebSocketRoute):
@@ -111,6 +153,10 @@ class SAWebsocketRoute(SolverWebsocketRoute):
 if __name__ == '__main__':
     server = ProtocolTypeRouter({
         'http': HttpServer(routes=[
+            (r'/$', LoginPage),
+            (r'/shift$', MainPage),
+            (r'/login$', Login),
+            (r'/static/(.*)$', StaticFile),
             (r'/user', GetUser), (r'/updateusershifts', UpdateUserShifts), 
             (r'/saveshift', SaveShift), (r'/loadshift$', LoadShift), 
             (r'/loadshifts$', LoadShifts)

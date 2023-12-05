@@ -8,10 +8,10 @@ import json
 class User(object):
 
     def __init__(self, **kwargs):
-        self.username = kwargs['username']
-        self.password = kwargs['password']
-        self.email =  kwargs['email']
-        self.shifts = kwargs['shifts']
+        self.username = kwargs.get('username', "")
+        self.password = kwargs.get('password', "")
+        self.email = kwargs.get('email', "")
+        self.shifts = kwargs.get('shifts', [])
 
     def getUsername(self):
         return self.username

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shift Scheduling App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        #navbar {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        #configArea {
+            width: 300px;
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        #shiftTable {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        #shiftSchedule {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #shiftTabs {
+            margin-bottom: 20px;
+        }
+
+        #shiftTabs .nav-item {
+            margin-right: 10px;
+        }
+
+        #shiftTabs .nav-link {
+            cursor: pointer;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #888;
+            float: right;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="navbar" class="navbar navbar-dark bg-primary">
+        <span class="navbar-brand mb-0 h1">Shift Scheduling App</span>
+    </div>
+
+    <div id="container">
+
+        <div id="configArea">
+            <!-- Configuration area for setting up parameters -->
+            <label for="numDays">Number of Days:</label>
+            <input type="number" id="numDays">
+
+            <label for="numEmployees">Number of Employees:</label>
+            <input type="number" id="numEmployees">
+
+            <label for="numComputationTime">Computation Time:</label>
+            <input type="number" id="numComputationTime">
+
+            <label for="computationMode">Computation Mode:</label>
+            <select id="computationMode">
+                <option value="normal">Normal</option>
+                <option value="advanced">Advanced</option>
+            </select>
+
+            <button onclick="updateSchedule()">Update Schedule</button>
+
+            <!-- Button to open the modal -->
+            <button onclick="openModal()">Open Modal</button>
+        </div>
+
+        <!-- Shift Schedule with Tabs -->
+        <div id="shiftTable" class="floatCard">
+            <!-- Tab container -->
+            <ul id="shiftTabs" class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" id="tabEmployee1" data-toggle="tab" href="#employee1">Employee 1</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="tabEmployee2" data-toggle="tab" href="#employee2">Employee 2</a>
+                </li>
+                <!-- Add more tabs dynamically based on the number of employees -->
+            </ul>
+
+            <!-- Tab content -->
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="employee1">
+                    <!-- Content for Employee 1 -->
+                    <table id="shiftScheduleEmployee1" class="table table-bordered">
+                        <!-- Your table content goes here -->
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="employee2">
+                    <!-- Content for Employee 2 -->
+                    <table id="shiftScheduleEmployee2" class="table table-bordered">
+                        <!-- Your table content goes here -->
+                    </table>
+                </div>
+                <!-- Add more tab content dynamically based on the number of employees -->
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <p>This is a modal. You can add more content here.</p>
+            </div>
+        </div>
+
+        <script>
+            // Your JavaScript logic goes here
+            function updateSchedule() {
+                // Implement your logic
+            }
+
+            // Open the modal
+            function openModal() {
+                document.getElementById('myModal').style.display = 'block';
+            }
+
+            // Close the modal
+            function closeModal() {
+                document.getElementById('myModal').style.display = 'none';
+            }
+        </script>
+    </div>
+
+</body>
+</html>

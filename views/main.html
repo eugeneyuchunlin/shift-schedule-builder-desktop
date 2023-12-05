@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shift Scheduling App</title>
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: rgba(245, 247, 250, 1) !important;
+        }
+
+        .floatCard{
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #configArea {
+            
+        }
+
+        #parameters{
+            width: 300px;
+            margin: 30px auto;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        .primary-btn {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+
+        .primary-btn:hover{
+            background-color: #0056b3; 
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        #navbar {
+            background-color: white;
+            color: black;
+            padding: 10px;
+            text-align: left;
+        }
+
+
+        #container {
+            display: flex;
+        }
+
+        #shiftTable {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-x: auto; /* Enable horizontal scrolling for the table */
+            margin: 30px 10px 0px 10px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            color: white;
+        }
+        a{
+            cursor: pointer;
+            outline: none;
+            text-decoration: none;
+            color: black !important;
+        }
+
+        #tagBox {
+            width: 300px;
+        }
+
+        #tagList {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .tag:hover{
+            background-color: #ddd;
+        }
+
+        .text{
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .tag_chosen{
+            background-color: #ddd !important;
+        }
+
+        .tag {
+            display: flex;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .tag_button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 0.5rem;
+            background-color: transparent;
+            border: none;
+            color: #888888;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+                /* Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #888;
+            float: right;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        #tabs{
+            margin: 10px auto;
+            display: flex; 
+            overflow: scroll;
+            border: 1px lightgrey solid;
+            border-radius: .2rem;
+        }
+
+        .tab{
+            background-color: white;
+            margin: 2px 5px 2px 5px;
+            width: auto;
+            border: 1px black solid;
+            
+        }
+
+        div.scrollmenu {
+            background-color: white;
+            overflow: auto;
+            white-space: nowrap;
+            border: 1px lightgrey solid;
+        }
+
+        div.scrollmenu a {
+            display: inline-block;
+            color: white;
+            text-align: center;
+            padding: 14px;
+            text-decoration: none;
+        }
+
+        div.scrollmenu a:hover {
+            background-color: rgb(230, 230, 230);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="navbar">
+        <a href="/">Shift Scheduling App</a>
+        <a style="float: right" onclick="logout()">Logout</a>
+    </div>
+
+    <div id="container">
+        <div id="shiftTable" class="floatCard">
+
+            <div id="shift-tabs" class="scrollmenu">
+                <a href="#" style="width: 50px;">+</a>
+            </div>
+              
+            <table id="shiftSchedule">
+                <thead>
+                    <tr>
+                        <!-- <th></th> Empty cell for the top-left corner -->
+                        <!-- Add day headers dynamically based on the number of days -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Add rows for each employee and shift using JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+
+        <div id="configArea">
+            <div id="parameters" class="floatCard">
+                <!-- Configuration area for setting up parameters -->
+                <label for="numDays">Number of Days:</label>
+                <input type="number" id="numDays">
+
+                <label for="numEmployees">Number of Employees:</label>
+                <input type="number" id="numEmployees">
+
+                <label for="numComputationTime">Computation Time:</label>
+                <input type="number" id="numComputationTime">
+
+                <select id="computationMode">
+                    <option value="SA">Simulated Annealing</option>
+                    <option value="DA">Quantum Annealing</option>
+                </select>
+
+                <button class="primary-btn" onclick="updateSchedule()">Update Schedule</button>
+            </div>
+            
+            <div id="tagBox" class="floatCard">
+                <div style="margin-bottom: 10px;">
+                    <span>Shift requirements</span>
+                </div>
+                <div id="tagList">
+                    <div class="tag" onClick='openModal("enowd")'>
+                        <span class="text">Expected number of working days</span>
+                        <button class="tag_button">
+                            <!-- <Image src="/add.svg" width={10} height={10} alt="add" /> -->
+                        </button>
+                    </div>
+                    <div id="enowd" class="modal">
+                        <div class="modal-content">
+                            <span class="close" onclick='closeModal("enowd")'>&times;</span>
+                            <p>This is a modal. You can add more content here.</p>
+                        </div>
+                    </div>
+
+                    <div class="tag" onClick={handleClick}>
+                        <span class="text">Expected number of workers per shift</span>
+                        <button class="tag_button">
+                            <!-- <Image src="/add.svg" width={10} height={10} alt="add" /> -->
+                        </button>
+                    </div>
+                    <div class="tag" onClick={handleClick}>
+                        <span class="text">Maximum consecutive working days</span>
+                        <button class="tag_button">
+                            <!-- <Image src="/add.svg" width={10} height={10} alt="add" /> -->
+                        </button>
+                    </div>
+                    <div class="tag" onClick={handleClick}>
+                        <span class="text">Minimum n-days leave within 7-days</span>
+                        <button class="tag_button">
+                            <!-- <Image src="/add.svg" width={10} height={10} alt="add" /> -->
+                        </button>
+                    </div>
+
+                    <div class="tag" onClick={handleClick}>
+                        <span class="text">Successive Shift Pair</span>
+                        <button class="tag_button">
+                            <!-- <Image src="/add.svg" width={10} height={10} alt="add" /> -->
+                        </button>
+                    </div>
+
+                    <div class="tag" onClick={handleClick}>
+                        <span class="text">Consecutive Leave</span>
+                        <button class="tag_button">
+                            <!-- <Image src="/add.svg" width={10} height={10} alt="add" /> -->
+                        </button>
+                    </div>
+
+                    <div class="tag" onClick={handleClick}>
+                        <span class="text">No consecutive leave</span>
+                        <button class="tag_button">
+                            <!-- <Image src="/add.svg" width={10} height={10} alt="add" /> -->
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        function setCookie(name, value, expirationDays) {
+          const expires = new Date();
+          expires.setDate(expires.getDate() + expirationDays);
+        
+          const cookieValue = encodeURIComponent(name) + "=" + encodeURIComponent(value) + ";expires=" + expires.toUTCString() + ";path=/";
+          document.cookie = cookieValue;
+        }
+
+        // Function to get the value of a cookie
+        function getCookie(name) {
+          const decodedCookies = decodeURIComponent(document.cookie);
+          const cookiesArray = decodedCookies.split('; ');
+        
+          for (let i = 0; i < cookiesArray.length; i++) {
+            const cookie = cookiesArray[i].split('=');
+            if (cookie[0] === name) {
+              return cookie[1];
+            }
+          }
+      
+          return null;
+        }
+
+        // Function to update the value of a cookie
+        function updateCookie(name, newValue, expirationDays) {
+          if (getCookie(name) !== null) {
+            setCookie(name, newValue, expirationDays);
+            return true;
+          }
+      
+          return false; // Cookie not found
+        }
+
+        // Function to delete a cookie
+        function deleteCookie(name) {
+          document.cookie = encodeURIComponent(name) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+        }
+    </script>
+
+    <script>
+        var all_shifts = [];
+        var current_shift = null;
+
+
+        function setUpTabs(){
+            console.log("Setting up tabs")
+            console.log("All shifts: ", all_shifts)
+            var tabs = document.getElementById('shift-tabs');
+            for(var i = 0; i < all_shifts.length; ++i){
+                var tab = document.createElement('a');
+                tab.href = '#';
+                tab.innerHTML = 'Shift ' + i;
+                tab.onclick = function(){
+                    current_shift = i;
+                }
+                tabs.appendChild(tab);
+                console.log(tab)
+            }
+        }
+
+        function setUpAShift(index){
+            var shift = all_shifts[index];
+            var table = document.getElementById('shiftSchedule');
+            var headerRow = table.insertRow(0);
+            headerRow.insertCell(0); // Empty cell for the top-left corner
+            for (var i = 1; i <= shift['days']; i++) {
+                var cell = headerRow.insertCell(i);
+                cell.innerHTML = i;
+            }
+
+            console.log(shift['number_of_workers'])
+            console.log(shift['table'])
+            // Create rows for each employee
+            for (var j = 0; j < shift['number_of_workers']; j++) {
+                var row = table.insertRow(-1);
+                var nameCell = row.insertCell(0);
+                nameCell.innerHTML = shift['name_list'][j];
+                
+                console.log(shift['days'])
+                // Initialize shift cells
+                for (var k = 0; k < shift['days']; k++) {
+                    var shiftCell = row.insertCell(k+1);
+                    shiftCell.innerHTML = shift['table'][0][j][k];
+                    console.log(shiftCell);
+                }
+            }
+        }
+
+
+        function logout(){
+            deleteCookie('username');
+            window.location.href = '/';
+        }
+
+        window.onload = function() {
+            if(getCookie('username') === null) {
+                window.location.href = '/';
+            }else{
+                // load shifts
+                fetch('/loadshifts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: getCookie('username'),
+                        shifts: getCookie('shifts').split(',')
+                    })
+                }).then(response => response.json()).then(data => {
+                    console.log(data);
+                    all_shifts = data['shifts_list'];
+                    console.log("First")
+                }).then(() => {
+                    console.log("Second")
+                    setUpTabs();
+                    setUpAShift(0);
+                });
+            }
+        }
+
+        // Open the modal
+        function openModal(id) {
+            var modal = document.getElementById(id);
+            modal.style.display = 'block';
+            
+        }
+
+        // Close the modal
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+            
+        }
+
+        // Function to update the schedule based on user input
+        function updateSchedule() {
+
+            var numDays = document.getElementById('numDays').value;
+            var numEmployees = document.getElementById('numEmployees').value;
+            var numComputationTime = document.getElementById('numComputationTime').value;
+
+            // Clear existing table
+            var table = document.getElementById('shiftSchedule');
+            table.innerHTML = '';
+
+            // Create header row
+            var headerRow = table.insertRow(0);
+            headerRow.insertCell(0); // Empty cell for the top-left corner
+            for (var i = 1; i <= numDays; i++) {
+                var cell = headerRow.insertCell(i);
+                cell.innerHTML = i;
+            }
+
+            // Create rows for each employee
+            for (var j = 1; j <= numEmployees; j++) {
+                var row = table.insertRow(j);
+                var nameCell = row.insertCell(0);
+                nameCell.innerHTML = j;
+
+                // Initialize shift cells
+                for (var k = 1; k <= numDays; k++) {
+                    var shiftCell = row.insertCell(k);
+                    shiftCell.innerHTML = '0';
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
