@@ -1,6 +1,8 @@
 from .user import User
 from .shift import Shift
+from .registry import Registry
 
+import redis
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
@@ -9,6 +11,12 @@ import pandas as pd
 import json
 import requests
 from requests.adapters import HTTPAdapter
+
+redis_client = redis.StrictRedis(
+                    host='redis-12297.c302.asia-northeast1-1.gce.cloud.redislabs.com',
+                    port=12297,
+                    password='W1m4qxXnWu0waZpAJqiWcWgmQFVKzejX'
+                )
 
 db_client = MongoClient(MONGODB_URI, server_api=ServerApi('1'))
 try:
@@ -45,7 +53,10 @@ class DataAdapter(DataAccess):
         super().__init__("Test1")
 
     def getUser(self, username:str, password:str):
-        user_data = self.db.Users.find_one({"username": username, "password": password})
+        redis_key = f"{username}{password}"
+        json_data = redis_client.execute_command('JSON.GET', redis_key)
+        user_data = json.loads(json_data)
+        #user_data = self.db.Users.find_one({"username": username, "password": password})
         if user_data is None:
             return
 
@@ -53,6 +64,13 @@ class DataAdapter(DataAccess):
         return user
     
     def updateUserShifts(self, user:User):
+        redis_key = f"{user.getUsername()}{user.getPassword()}"
+        json_data = redis_client.execute_command('JSON.GET', redis_key)
+        user_data = json.loads(json_data)
+        user_data["shifts"] = user.getShifts()
+        updated_json_data = json.dumps(user_data)
+        redis_client.execute_command('JSON.SET', redis_key, '.', updated_json_data)
+
         user_collection = self.db.Users
         user_collection.update_one({"username": user.getUsername()}, {"$set": {"shifts": user.getShifts()}})
         pass
@@ -84,9 +102,25 @@ class DataAdapter(DataAccess):
         shifts = []  
         for shift_id in user.getShifts():
             shift_df = self.loadShift(shift_id)    
-            shifts.append(shift_df)
+            shifts.append(shift_df.getShiftConfiguration())
         return shifts
 
+    def addRegistry(self, registry:Registry):
+        registry_collection = self.db.Registries
+        registry_collection.update_one({}, {"$set": {"FS": registry.getFS()}})
+        registry_collection.update_one({}, {"$set": {"OSC": registry.getOSC()}})
+        pass
+
+    #def getHealthCheck(self, fs_status:str, osc_status:str):
+    #    registries_status = self.db.Registries.find_one({"FS": fs_status, "OSC": osc_status})
+    #    if registries_status is None:
+    #        return
+    #    registry = Registry(**registries_status)
+    #    return registry
+    def getHealthCheck(self):
+        registries_status = self.db.Registries.find_one()
+        registry = Registry(**registries_status)
+        return registry
 
 class RemoteDataAdapter(DataAccess):
 
@@ -96,7 +130,6 @@ class RemoteDataAdapter(DataAccess):
     def getUser(self, username:str, password:str):
         r = requests.post("http://localhost:8888/user", json={"username":username, "password":password})
         user_data = json.loads(r.text)
-        #print(user_data)
         user = User(**user_data)
         return user
 
@@ -106,8 +139,6 @@ class RemoteDataAdapter(DataAccess):
 
     def saveShift(self, user:User, shift:Shift):
         r = requests.post("http://localhost:8888/saveshifts", json={'user' : user.data(), 'shift': shift.getShiftConfiguration()})
-        #user_data = json.loads(r.text)
-        #user = User(**user_data)
         return r.text
 
     def loadShift(self, shift_id:str) -> Shift:

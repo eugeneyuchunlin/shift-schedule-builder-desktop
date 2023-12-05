@@ -6,11 +6,13 @@ from src.model.data_adapter import DataAdapter
 import json
 from src.model.user import User
 from src.model.shift import Shift
+from src.model.registry import Registry
 from src.algorithms.Solvers import SASolver, DAUSolver
 import time
 from os import path
 
 mongodbDataAdapter = DataAdapter()
+redisDataAdapter = DataAdapter()
 
 class Login(Route):
 
@@ -38,7 +40,8 @@ class GetUser(Route):
             body = json.loads(self.request.body)
             username = body['username']
             password = body['password']
-            user = mongodbDataAdapter.getUser(username, password)
+            #user = mongodbDataAdapter.getUser(username, password)
+            user = redisDataAdapter.getUser(username,password)
             self.response.send(200, user.toJson(), content_type='application/json')
         else:
             self.response.send(400, 'Bad Request')
@@ -49,7 +52,8 @@ class UpdateUserShifts(Route):
         if self.request.method == 'POST':
             body = json.loads(self.request.body)
             user = User(**body)
-            mongodbDataAdapter.updateUserShifts(user)
+            #mongodbDataAdapter.updateUserShifts(user)
+            redisDataAdapter.updateUserShifts(user)
             self.response.send(200, 'Finish')
         else:
             self.response.send(400, 'Bad Request')
@@ -81,16 +85,11 @@ class LoadShift(Route):
 class LoadShifts(Route):
 
     def handle(self):
-        shifts_list = {'shifts_list':[]}
         if self.request.method == 'POST':
             body = json.loads(self.request.body)
-            print(body)
-            user = User(**body)       
+            user = User(**body)
             shifts = mongodbDataAdapter.loadShifts(user)
-            for i in range(len(shifts)):
-                data_json = shifts[i].getShiftConfiguration()
-                shifts_list['shifts_list'].append(data_json)
-            self.response.send(200, json.dumps(shifts_list), content_type='application/json')
+            self.response.send(200, json.dumps(shifts), content_type='application/json')
         else:
             self.response.send(400, 'Bad Request')
 
@@ -116,6 +115,30 @@ class StaticFile(Route):
     pass 
 
 
+class AddRegistry(Route):
+
+    def handle(self):
+        if self.request.method == 'POST':
+            body = json.loads(self.request.body)
+            registry = Registry(**body)
+            mongodbDataAdapter.addRegistry(registry)
+            self.response.send(200, 'Finish')
+        else:
+            self.response.send(400, 'Bad Request')
+
+class GetHealthCheck(Route):
+
+    def handle(self):
+        if self.request.method == 'POST':
+            #body = json.loads(self.request.body)
+            #fs_status = body['FS']
+            #osc_status = body['OSC']
+            #registry = mongodbDataAdapter.getHealthCheck(fs_status, osc_status)
+            registry = mongodbDataAdapter.getHealthCheck()
+            self.response.send(200, registry.toJson(), content_type='application/json')
+        else:
+            self.response.send(400, 'Bad Request')
+
 class SolverWebsocketRoute(WebSocketRoute):
 
     def __init__(self, request, response, solver_type):
@@ -138,15 +161,6 @@ class SolverWebsocketRoute(WebSocketRoute):
             self.response.send(json.dumps({"message": "status", "status": "finished"}))
             self.response.send(json.dumps({"message": "result", "result": shifts}))
 
-class DAUWebsocketRoute(SolverWebsocketRoute):
-
-    def __init__(self, request, response):
-        super().__init__(request, response, DAUSolver)
-
-class SAWebsocketRoute(SolverWebsocketRoute):
-
-    def __init__(self, request, response):
-        super().__init__(request, response, SASolver)
 
 
 
@@ -159,11 +173,8 @@ if __name__ == '__main__':
             (r'/static/(.*)$', StaticFile),
             (r'/user', GetUser), (r'/updateusershifts', UpdateUserShifts), 
             (r'/saveshift', SaveShift), (r'/loadshift$', LoadShift), 
-            (r'/loadshifts$', LoadShifts)
+            (r'/loadshifts$', LoadShifts),
+            (r'/registry/add', AddRegistry),(r'/gethealthcheck', GetHealthCheck)
         ]),
-        'websocket': WebSocketServer(routes=[
-                (r'/dau', DAUWebsocketRoute),
-                (r'/sa', SAWebsocketRoute)
-            ])
-        })
+    })
     server.run()
