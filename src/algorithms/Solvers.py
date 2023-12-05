@@ -392,7 +392,13 @@ class SASolver(DAUSolver):
     def solve(self):
         print("solved by sa")
         sampler = neal.SimulatedAnnealingSampler()
-        sampleset = sampler.sample(self._bqm, num_reads=10, num_sweeps=self._computation_time)
+
+        start_time = time.time() 
+        def timer():
+            end_time = time.time()
+            return (end_time - start_time) > self._computation_time
+
+        sampleset = sampler.sample(self._bqm, num_reads=100000, num_sweeps=5000, interrupt_function=timer)
         decoded_samples = self._model.decode_sampleset(sampleset)
         sampleset = min(decoded_samples, key=lambda x:x.energy)
         solution = sampleset.sample
