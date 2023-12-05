@@ -2,8 +2,11 @@ import pandas as pd
 from PySide6.QtWidgets import (
     QWidget, QFormLayout, QLineEdit, 
     QLabel, QPushButton, QComboBox,
-    QDialog, QHBoxLayout
+    QDialog, QVBoxLayout, QHBoxLayout,
+    QGridLayout
 )
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont
 
 
 class ShiftRequirementTagBase(QWidget):
@@ -13,11 +16,29 @@ class ShiftRequirementTagBase(QWidget):
         self.name = name
         self.dialog = ShiftRequirementBase(text)
 
-        self.layout = QFormLayout()
+
+
+        self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(0, 0, 5, 10)
         self.btn = QPushButton(text)
         self.btn.clicked.connect(self.openDialog)
-        self.layout.addRow(self.btn)
+        self.layout.addWidget(self.btn)
         self.setLayout(self.layout)
+        self.setStyleSheet("""
+            QPushButton {
+                background-color: #f0f0f0;
+                padding: 0.25rem 0.5rem;
+                border-radius: 4px;
+                color: black;
+                border: none;
+                color: black;
+            }
+
+            QPushButton:hover {
+                background-color: #ddd;
+            }
+        """)
+        self.setFont(QFont("Arial", 6))
 
     def openDialog(self):
         self.dialog.exec()
@@ -84,6 +105,22 @@ class ShiftRequirementWithWeightAndParam(ShiftRequirementBase):
         return parameters
 
 
+class TagBox(QWidget):
+
+    def __init__(self, requirements):
+        super().__init__()
+        self.layout = QGridLayout(self)
+        self.layout.setSpacing(0)
+        self.layout.setContentsMargins(-1, 0, -1, -1)
+        self.layout.addWidget(requirements[0], 0, 0)
+        self.layout.addWidget(requirements[1], 1, 0)
+        self.layout.addWidget(requirements[2], 2, 0)
+        self.layout.addWidget(requirements[3], 3, 0)
+        self.layout.addWidget(requirements[4], 0, 1)
+        self.layout.addWidget(requirements[5], 2, 1)
+        self.layout.addWidget(requirements[6], 1, 1)
+        self.setLayout(self.layout)
+
 class ParametersForm(QWidget):
     """
     This class is used to create a form for user to input the parameters of the algorithm.
@@ -113,42 +150,107 @@ class ParametersForm(QWidget):
         This method creates the form for user to input the parameters of the algorithm.
         The fields of the form are created dynamically based on the parameters_fields attribute.
         """
-        formlayout = QFormLayout()
+        self.setStyleSheet("""
+            QLabel {
+                font-size: 16px;
+                color: #495057;
+            }
+
+            QLineEdit {
+                padding: 8px;
+                font-size: 14px;
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+                width: 100px;
+                background-color: #ffffff;
+            }
+
+            QPushButton {
+                background-color: #007bff;
+                color: #f0f0f0;
+                border: none;
+                border-radius: 4px;
+            }
+
+            QPushButton:hover {
+                background-color: #0056b3;
+            }
+
+            QComboBox {
+                padding: 6px 12px;
+                font-size: 14px;
+                line-height: 1.42857143;
+                color: #555555;
+                background-color: #ffffff;
+                background-image: none;
+                border: 1px solid #cccccc;
+                border-radius: 4px;
+                width: 100px;
+            }
+
+            QComboBox:hover, QComboBox:focus {
+                border-color: #999999;
+            }
+
+            QComboBox::drop-down {
+                background-color: #ffffff;
+            }
+
+            QComboBox::drop-down:hover {
+                background-color: #e6e6e6;
+            }                    
+        """)
+        
+        layout = QGridLayout()
 
         self._days_key = QLabel("Days")
+        layout.addWidget(self._days_key, 0, 0)
+
         self._days_edit = QLineEdit("30")
-        formlayout.addRow(self._days_key, self._days_edit)
+        layout.addWidget(self._days_edit, 0, 1)
 
         self._number_of_workers = QLabel("Number of workers")
+        layout.addWidget(self._number_of_workers, 1, 0)
+
         self._number_of_workers_edit = QLineEdit("10")
-        formlayout.addRow(self._number_of_workers, self._number_of_workers_edit)
+        layout.addWidget(self._number_of_workers_edit, 1, 1)
 
         self._computation_time = QLabel("Computation time")
+        layout.addWidget(self._computation_time, 2, 0)
         self._computation_time_edit = QLineEdit("1")
-        formlayout.addRow(self._computation_time, self._computation_time_edit)
+        layout.addWidget(self._computation_time_edit, 2, 1)
 
         self.combo = QComboBox()
         self.combo.addItem("DAU")
         self.combo.addItem("SA")
 
-        formlayout.addRow(QLabel("Choose a running mode"), self.combo)
+        layout.addWidget(QLabel("Choose a running mode"), 3, 0)
+        layout.addWidget(self.combo, 3, 1)
 
         self.requirements = []
         self.requirements.append(ShiftRequirementTagWithWeightAndParam("Expected Number Of Working Days", "expected_number_of_working_days", 'ewd'))
         self.requirements.append(ShiftRequirementTagWithWeightAndParam("Expected Number Of Workers Per Shift", "expected_number_of_workers_per_shift", "enwps"))
-        self.requirements.append(ShiftRequirementTagWithWeight("Successive Shift Pair", "successive_shift_pair"))
-        self.requirements.append(ShiftRequirementTagWithWeight("Consecutive 2 Days Off", "consecutive_2_days_leave"))
-        self.requirements.append(ShiftRequirementTagWithWeight("No More Than 2 Consecutive Days Off", "no_consecutive_leave"))
         self.requirements.append(ShiftRequirementTagWithWeightAndParam("Maximum Number Of Consecutive Shifts", "maximum_consecutive_working_days", "mcwd"))
         self.requirements.append(ShiftRequirementTagWithWeightAndParam("Minimum Number N Days Off Within 7 Days", "minimum_n_days_leave_within_7_days", "mndlw7d"))
+        self.requirements.append(ShiftRequirementTagWithWeight("Successive Shift Pair", "successive_shift_pair"))
+        self.requirements.append(ShiftRequirementTagWithWeight("Consecutive Leave", "consecutive_2_days_leave"))
+        self.requirements.append(ShiftRequirementTagWithWeight("No Consecutive Leave", "no_consecutive_leave"))
+        self.tagBox = TagBox(self.requirements)
 
-        for requirement in self.requirements:
-            formlayout.addRow(requirement)
+
+        layout.addWidget(QLabel("Constraints"), 4, 0, 1, 2)
+        layout.addWidget(self.tagBox, 5, 0, 1, 2)
 
         self.runbutton = QPushButton("Run")
-        formlayout.addRow(self.runbutton)
+        self.runbutton.setStyleSheet("""
+            QPushButton {
+                font-size : 16px;
+                padding: 8px 16px;
+            }
+        """)
+        layout.addWidget(self.runbutton, 6, 0, 1, 2)
 
-        self.setLayout(formlayout)
+        self.setLayout(layout)
 
     def parameters(self) -> dict:
         """

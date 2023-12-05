@@ -10,24 +10,60 @@ class LoginDialog(QDialog):
 
     def __init__(self):
         super().__init__()
+        
         self.setWindowTitle("Login")
         self.setModal(True)
+
+        self.setStyleSheet("""
+            QDialog {
+                background-color: #f8f9fa;
+                font-family: 'Arial', sans-serif;
+            }
+
+            QLabel {
+                font-size: 16px;
+                color: #495057;
+            }
+
+            QLineEdit {
+                padding: 8px;
+                font-size: 14px;
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+                width: 400px;
+                background-color: #ffffff;
+            }
+
+            QPushButton {
+                padding: 8px 16px;
+                font-size: 16px;
+                background-color: #007bff;
+                color: #ffffff;
+                border: none;
+                border-radius: 4px;
+            }
+
+            QPushButton:hover {
+                background-color: #0056b3;
+            }
+        """)
 
         self.layout = QVBoxLayout()
         formlayout = QFormLayout()
         self._username_label = QLabel("Username")
-        self._username_edit = QLineEdit()
+        self._username_edit = QLineEdit("eugene")
         formlayout.addRow(self._username_label, self._username_edit)
 
         self._password_label = QLabel("Password")
-        self._password_edit = QLineEdit()
+        self._password_edit = QLineEdit("password")
         formlayout.addRow(self._password_label, self._password_edit)
+        self.layout.addLayout(formlayout)
 
         self._login_btn = QPushButton("Login")
         self.layout.addWidget(self._login_btn)
         self._login_btn.clicked.connect(self.login)
 
-        self.layout.addLayout(formlayout)
+        
         self.setLayout(self.layout)
 
     def login(self):

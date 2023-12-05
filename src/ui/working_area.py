@@ -78,8 +78,8 @@ class WorkingArea(QWidget):
         self.generateEmptyShift()
 
         layout.addWidget(self.table, 0, 0, 3, 1)
-        layout.addWidget(self.form, 0, 1, 2, 2)
-        layout.addWidget(self.progress_bar, 2, 1, 1, 2)
+        layout.addWidget(self.progress_bar, 0, 1, 1, 2)
+        layout.addWidget(self.form, 1, 1, 2, 2)
 
         self.setLayout(layout)
 

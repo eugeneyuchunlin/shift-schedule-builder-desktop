@@ -47,6 +47,37 @@ class Tabs(QWidget):
         # self.initUI()
 
         self.tabwidget = QTabWidget()
+
+        self.setStyleSheet("""
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+        """)
+
+        self.tabwidget.setStyleSheet("""
+            QTabWidget::pane {
+                border: 1px solid #dee2e6;
+                border-radius: 4px;
+                background-color: #ffffff;
+                margin: 4px;
+            }
+
+            QTabWidget::tab-bar {
+                alignment: left;
+                margin-left: 4px;
+            }
+
+            QTabBar::tab {
+                background-color: white;
+                color: black;
+                border: 1px solid #007bff;
+                padding: 8px;
+            }
+
+            QTabBar::tab:selected {
+                background-color: #0056b3;
+                color: #ffffff;
+            }
+        """)
         shift_ids = user.getShifts()
         if len(shift_ids) == 0:
             self.addANewTab()
