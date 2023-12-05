@@ -1,6 +1,6 @@
 from src.server.server import ProtocolTypeRouter, HttpServer, WebSocketServer
 from src.server.route import Route, WebSocketRoute
-
+import requests
 import json
 from src.algorithms.Solvers import DAUSolver
 from server import SolverWebsocketRoute
@@ -16,4 +16,11 @@ if __name__ == '__main__':
                 (r'/dau', DAUWebsocketRoute)
             ])
         }, port=8889)
-    server.run()
+
+    try:
+        requests.post("http://localhost:8000/registry/add", json={"service": "DAU"}) 
+        server.run()
+    except KeyboardInterrupt:
+        requests.post("http://localhost:8000/registry/delete", json={"service": "DAU"}) 
+        print("Shutting down server")
+        print("Server shut down")

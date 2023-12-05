@@ -121,6 +121,7 @@ class AddRegistry(Route):
     def handle(self):
         if self.request.method == 'POST':
             body = json.loads(self.request.body)
+            body['status'] = "ON"
             registry = Registry(**body)
             mongodbDataAdapter.addRegistry(registry)
             self.response.send(200, 'Finish')
@@ -132,6 +133,7 @@ class DeleteRegistry(Route):
     def handle(self):
         if self.request.method == 'POST':
             body = json.loads(self.request.body)
+            body['status'] = "OFF"
             registry = Registry(**body)
             mongodbDataAdapter.addRegistry(registry)
             self.response.send(200, 'Finish')
@@ -141,7 +143,7 @@ class DeleteRegistry(Route):
 class GetHealthCheck(Route):
 
     def handle(self):
-        if self.request.method == 'POST':
+        if self.request.method == 'GET':
             registry = mongodbDataAdapter.getHealthCheck()
             self.response.send(200, json.dumps(registry), content_type='application/json')
         else:

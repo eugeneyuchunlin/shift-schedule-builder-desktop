@@ -12,9 +12,10 @@ from .route import TestRoute, Request, Response, EchoWebsocketRoute, WebSocketRe
 
 class ProtocolTypeRouter(object):
 
-    def __init__(self, protocols, bind='localhost', port=8888):
+    def __init__(self, protocols, bind='localhost', port=8888, terminate_function=None):
         self.HOST = bind
         self.PORT = port
+        self._terminate_function = terminate_function
 
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
@@ -32,6 +33,8 @@ class ProtocolTypeRouter(object):
 
     def shutdown(self, signum, frame):
         self._server_socket.close()
+        if self._terminate_function is not None:
+            self._terminate_function()
         sys.exit(0)
 
     def routing(self, client_socket):
