@@ -155,6 +155,7 @@
                 console.log(data);
                 if(data.message === 'successful') {
                     setCookie('username', data.data.username, 1);
+                    setCookie('password', data.data.password, 1);
                     setCookie('shifts', data.data.shifts, 1);
                     window.location.href = '/shift';
                 } else {

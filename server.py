@@ -27,6 +27,7 @@ class Login(Route):
             else:
                 data = {
                     "username": user.username,
+                    "password" : user.password,
                     "shifts": user.shifts
                 }
                 self.response.send(200, json.dumps({"message": "successful", "data" : data}), content_type='application/json')
@@ -66,7 +67,7 @@ class SaveShift(Route):
             user = User(**body['user'])
             shift = Shift(body['shift'])         
             mongodbDataAdapter.saveShift(user, shift)
-            self.response.send(200, 'Finish')
+            self.response.send(200, json.dumps({"message" : "Finished"}), content_type='application/json')
         else:
             self.response.send(400, 'Bad Request')
 

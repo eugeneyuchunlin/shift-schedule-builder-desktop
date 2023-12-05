@@ -470,9 +470,68 @@
         function deleteCookie(name) {
           document.cookie = encodeURIComponent(name) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
         }
+
+        function guid() {
+            function s4() {
+                return Math.floor((1 + Math.random()) * 0x10000)
+                .toString(16)
+                .substring(1);
+            }
+            return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                s4() + '-' + s4() + s4() + s4();
+        }
     </script>
 
     <script>
+
+        function saveShift(){
+            if(all_shifts[current_shift].shift_id === undefined){
+                all_shifts[current_shift].shift_id = guid();
+                var shifts = getCookie('shifts').split(',');
+                shifts.push(all_shifts[current_shift].shift_id);
+                updateCookie('shifts', shifts.join(','), 1);
+            }
+            
+            
+
+            var shift = all_shifts[current_shift];
+            console.log(shift);
+            fetch('/saveshift', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user : {
+                        username: getCookie('username'),
+                        password: getCookie('password'),
+                        shifts: shifts
+                    },
+                    shift: shift
+                })
+            }).then(response => response.json()).then(data => {
+                console.log(data);
+            });
+        }
+
+        var socket = new WebSocket("ws://localhost:8890/sa");
+        socket.onopen = function(e) {
+            console.log("[open] Connection established");
+        };
+
+        var temp_data = null;
+
+        socket.onmessage = function(event) {
+            var data = JSON.parse(event.data);
+            console.log(`[message] Data received from server: ${data.message}`);
+            if(data.message === 'result'){
+                all_shifts[current_shift]['table'] = data.result
+                console.log(all_shifts[current_shift]['table'])
+                setUpAShift(current_shift);
+                saveShift();
+            }
+        };
+
         var all_shifts = [];
         var current_shift = null;
  
@@ -505,6 +564,7 @@
             data['days'] = Number(document.getElementById('numDays').value);
             data['number_of_workers'] = Number(document.getElementById('numEmployees').value);
             data['computation_time'] = Number(document.getElementById('numComputationTime').value);
+
             data['reserved_leave'] = []
             data['constraints'] = all_shifts[current_shift]['constraints']
             data['content'] = []
@@ -517,7 +577,17 @@
                     data['content'][i]['shift_array'].push(all_shifts[current_shift]['table'][0][i][j])
                 }
             }
+            // store parameters to all_shifts
+            all_shifts[current_shift]['type'] = data['type'];
+            all_shifts[current_shift]['days'] = data['days'];
+            all_shifts[current_shift]['number_of_workers'] = data['number_of_workers'];
+            all_shifts[current_shift]['computation_time'] = data['computation_time'];            
+            all_shifts[current_shift]['constraints'] = data['constraints'];
+            all_shifts[current_shift]['table'] = data['content'];
+
+
             console.log(data)
+            socket.send(JSON.stringify(data));
         }
 
 
@@ -595,6 +665,8 @@
 
         function logout(){
             deleteCookie('username');
+            deleteCookie('password');
+            deleteCookie('shifts');
             window.location.href = '/';
         }
 
@@ -631,7 +703,6 @@
         // Close the modal
         function closeModal(id) {
             document.getElementById(id).style.display = 'none';
-            
         }
 
         // Function to update the schedule based on user input
