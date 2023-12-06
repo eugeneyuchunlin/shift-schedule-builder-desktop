@@ -22,5 +22,6 @@ if __name__ == '__main__':
             ])
         }, port=8890, terminate_function=deleteRegistry)
     
-    requests.post("http://localhost:8888/registry/add", json={"service": "SA"}) 
+    
+    requests.post("http://localhost:8888/registry/add", json={"service": "SA", 'url' : "ws://localhost:8890/sa"}) 
     server.run()

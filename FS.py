@@ -10,6 +10,10 @@ class DAUWebsocketRoute(SolverWebsocketRoute):
     def __init__(self, request, response):
         super().__init__(request, response, DAUSolver)
 
+def deleteRegistry():
+    print("Shutting down server")
+    requests.post("http://localhost:8888/registry/delete", json={"service": "DAU"})
+
 if __name__ == '__main__':
     server = ProtocolTypeRouter({
         'websocket': WebSocketServer(routes=[
@@ -17,10 +21,6 @@ if __name__ == '__main__':
             ])
         }, port=8889)
 
-    try:
-        requests.post("http://localhost:8000/registry/add", json={"service": "DAU"}) 
-        server.run()
-    except KeyboardInterrupt:
-        requests.post("http://localhost:8000/registry/delete", json={"service": "DAU"}) 
-        print("Shutting down server")
-        print("Server shut down")
+    requests.post("http://localhost:8888/registry/add", json={"service": "DAU", 'url' : "ws://localhost:8889/dau"}) 
+    server.run()
+    print("Server shut down")

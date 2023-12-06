@@ -9,6 +9,7 @@ class Registry(object):
     def __init__(self, **kwargs):
         self.service = kwargs['service']
         self.status = kwargs['status']
+        self.url = kwargs.get('url', "")
 
     def getService(self):
         return self.service
@@ -30,7 +31,11 @@ class Registry(object):
         return {
             'service' : self.service,
             'status' : self.status,
+            'url' : self.url
         }
+    
+    def getUrl(self):
+        return self.url
 
     def toJson(self):
         return json.dumps(self.data(), indent=2)

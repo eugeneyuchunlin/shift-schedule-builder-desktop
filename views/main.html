@@ -259,8 +259,9 @@
                 <input type="number" id="numComputationTime">
 
                 <select id="computationMode">
-                    <option value="SA">Simulated Annealing</option>
-                    <option value="DAU">Quantum Annealing</option>
+                    <option value="N">Choose One Running Mode</option>
+                    <option value="SA" id="SA" disabled>Simulated Annealing</option>
+                    <option value="DAU" id="DAU" disabled>Quantum Annealing</option>
                 </select>
 
                 <button class="primary-btn" onclick="updateSchedule()">Update Schedule</button>
@@ -585,8 +586,6 @@
             all_shifts[current_shift]['constraints'] = data['constraints'];
             all_shifts[current_shift]['table'] = data['content'];
 
-
-            console.log(data)
             socket.send(JSON.stringify(data));
         }
 
@@ -660,6 +659,9 @@
             document.getElementById('numEmployees').value = shift['number_of_workers'];
             document.getElementById('numComputationTime').value = shift['computation_time'];
             document.getElementById('computationMode').value = shift['type'];
+            if(document.getElementById(shift['type']).disabled){
+                document.getElementById('computationMode').value = 'N';
+            }
         }
 
 
@@ -691,6 +693,24 @@
                     setUpAShift(0);
                 });
             }
+
+            // load services
+            fetch('/gethealthcheck', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => response.json()).then(data => {
+                console.log(data);
+                for(var i = 0; i < data.length; ++i){
+                    var service = data[i].service;
+                    var dom = document.getElementById(service);
+                    
+                    console.log(service);
+                    console.log(data[i].status)
+                    dom.disabled = data[i].status === 'OFF';
+                }
+            });
         }
 
         // Open the modal
