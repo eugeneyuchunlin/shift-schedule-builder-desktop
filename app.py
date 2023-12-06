@@ -1,23 +1,69 @@
 import sys
-from PySide6.QtWidgets import QApplication
-from PySide6 import QtCore, QtWidgets, QtWebEngineWidgets
-from src.ui.ui import MainWindow
-import os
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
+from PySide6.QtCore import QUrl
 
-CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtWebEngineCore import QWebEnginePage
+from PySide6.QtWebEngineCore import QWebEngineDownloadRequest
+import requests
 
+
+class Browser(QMainWindow):
+    def __init__(self, page):
+        super().__init__()
+
+        self.setWindowTitle("Shift Generator")
+        self.setGeometry(100, 100, 1920, 1080)
+
+        central_widget = QWidget(self)
+        self.setCentralWidget(central_widget)
+
+        layout = QVBoxLayout(central_widget)
+
+        self.web_view = QWebEngineView(self)
+        self.web_view.setPage(page)
+        layout.addWidget(self.web_view)
+
+class WebEnginePage(QWebEnginePage):
+    def __init__(self):
+        super().__init__()
+
+        # Connect the downloadRequested signal to the custom slot
+        self.profile().downloadRequested.connect(self.downloadRequested)
+
+
+    def acceptNavigationRequest(self, url, navigation_type, is_main_frame):
+        if navigation_type == QWebEnginePage.NavigationTypeFormSubmitted:
+            print(f"Form submitted with URL: {url.toString()}")
+        print(f"Navigation type: {navigation_type}")
+        return super().acceptNavigationRequest(url, navigation_type, is_main_frame)
+
+    def downloadRequested(self, item: QWebEngineDownloadRequest):
+        # Handle the download request
+        # download_path = "~/Downloads/"  # Set your desired download path
+        print(item)
+        item.setDownloadFileName(f"{item.downloadFileName()}.csv")
+        item.accept()
+
+def getHtmlContent(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.text
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
+        return None
 
 if __name__ == "__main__":
 
-    if not os.path.exists('jobs'):
-        os.mkdir('jobs')
+    server_url = "http://localhost:8888/"
+    html_content= getHtmlContent(server_url)
 
     app = QApplication(sys.argv)
-    # view = QtWebEngineWidgets.QWebEngineView()
-    # filename = os.path.join(CURRENT_DIR, 'views/login.html')
-    # print(filename)
-    # view.load(QtCore.QUrl.fromLocalFile(filename))
-    # view.show()
-    win = MainWindow()  # pass type
-    win.show()
+    webEnginePage = WebEnginePage()
+    webEnginePage.setHtml(html_content, QUrl(server_url))
+
+    fake_browser = Browser(webEnginePage)
+    fake_browser.show()
+    
     sys.exit(app.exec())
