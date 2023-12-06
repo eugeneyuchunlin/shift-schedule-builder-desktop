@@ -24,24 +24,27 @@
 \section{Description}
 Shift Schedule Builder Desktop is an application designed to simplify the task of shift arrangement for employees. Its primary aim is to provide a user-friendly interface that allows users to input their shift requirements and configurations easily and generate a shift that satisfies these shift requirements as much as possible.
 
-The user can set up some basic shift parameters such as the number of days and the number of employees. The application will generate an empty shift that satisfies the basic requirement. In addition to basic shift parameters, users are able to add some shift requirements. The application provides several common shift requirements. For example, users are able to set up the expected number of working days in the given range of the shift. The application will automatically generate a schedule for them based on the given data and constraints. Since the scheduling problem is a multi-objective optimization problem, the users have to specify the weight of each constraints. If the user values a shift requirement a lot, the user has to specify bigger weight on that shift requirement.
+The user can set up some basic shift parameters such as the number of days and the number of employees. The application will generate an empty shift that satisfies the basic requirement. In addition to basic shift parameters, users are able to add some shift requirements. The application provides several common shift requirements. For example, users are able to set up the expected number of working days in the given range of the shift. The application will automatically generate a schedule for them based on the given data and constraints. Since the scheduling problem is a multi-objective optimization problem, the users have to specify the weight of each constraint. If the user values a shift requirement a lot, the user has to specify a bigger weight on that shift requirement.
 
-The project is developed using Python and PyQt.
+The project is developed using Python, HTML, Javascript, and CSS.
 \subsection{UI Sketch}
-We developed the UI by using \textbf{PyQt}. We have set up the basic parameters such as the width and the height of the main window by using the \textbf{QtDesigner}. The user interface is designed by inheriting the \textbf{QWidget}.
+We developed the UI by using HTML, Javascript, and CSS for both desktop-based client and a web-based client. We employed \textbf{QWebEngineView} and \textbf{QWebEnginePage} to embed the HTML, Javascript, and CSS code in the desktop-based client.
+We opted to integrate the website into the desktop-based client primarily due to the website's more user-friendly and aesthetically pleasing design. Furthermore, there is no gap or learning curve for users transitioning from the web-based application to the desktop-based application. Both applications maintain a consistent user experience.
 
 \subsubsection{Login}
-In the beginning, the user has to login. The login dialog inherits QDialog. The login window will collect the username and password of the user to check and set different user. The login dialog serves as a view and controller in the application. After collecting the user's information, it will send the information to the database adapter to check if the user exists or not.
+In the beginning, the user has to log in. The login page will collect the username and password of the user to check and set up different users. The login page serves as a view and controller in the application. After collecting the user's information, it will send the information to the backend's database adapter to check if the user exists or not.
+
+After receiving the user's information, the application will store the information by using Cookies. 
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.45]{login_window}
+\includegraphics[width=\textwidth]{login_window}
 \caption{User Interface - Login Dialog}
 \label{uilogin}
 \end{figure}
 
-\subsubsection{Main Window}
-There is a class MainWindow which inherits QMainWindow and creates the frame of the window. The main window enables users to create multiple shifts by adding tabs and set up the parameters. The main window is composed of several components. The UI components are shown in the figure below. The detail of the design pattern will be elaborated in the architecture design section.
+\subsubsection{Main Page}
+The main page enables users to create multiple shifts by adding tabs and setting up the parameters. The main page is composed of several components. The UI components are shown in the figure below. The details of the design pattern will be elaborated in the architecture design section.
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{main_window}
@@ -85,17 +88,17 @@ There is a class MainWindow which inherits QMainWindow and creates the frame of 
 \begin{description}
 \item[Use case:] Login
 \item[Actor:] System user
-\item[Goal:] To login the system
-\item[Overview:] When the users open the application, they have to sign in the system. 
+\item[Goal:] To login to the system
+\item[Overview:] When the users open the application, they have to sign in to the system. 
 If they type their username and password correctly, they are able to sign in. 
 However, if they type either username or password wrong, the system will pop up a window showing a message that tells the users they failed to sign in.
 \item[Actor action:]
 \
 \begin{enumerate}
 \item user: A user types username and password
-\item user: The user click login button
-\item system: If both username and password are correct, then the system will allow user to login; otherwise, the system will pop up a message that tells the user that the given information is not correct.
-\item user: If the user is fail to login, the user may click the close button to close the application; otherwise, the system will close the login dialog window and show the application's user interface.
+\item user: The user clicks the login button
+\item system: If both username and password are correct, then the system will allow the user to log in; otherwise, the system will pop up a message that tells the user that the given information is not correct.
+\item user: If the user fails to login, the user may click the close button to close the application; otherwise, the system will close the login dialog window and show the application's user interface.
 \end{enumerate}
 
 \item[Alternative courses:]
@@ -106,12 +109,33 @@ However, if they type either username or password wrong, the system will pop up 
 
 \end{description}
 
+\subsubsection{Create a new shift}
+\begin{description}
+\item[Use Case: ] Create a new shift
+\item[Actor: ] System user
+\item[Goal: ] To create a new empty shift
+\item[Overview: ] Before the application generates a shift for the user, the user has to create a new empty shift.
+\item[Actor action: ]
+\
+\begin{enumerate}
+\item user: A user clicks the '+' button at the tab line.
+\item system: The system create a new empty shift.
+\item user: The user may set up shift parameters.
+\end{enumerate}
+\
+\item[Alternative courses:]
+\
+\begin{description}
+\item[Steps 1 and 2:] The user may click the close button to close the application.
+\end{description}
+\end{description}
+
 \subsubsection{Set up shift parameters}
 \begin{description}
 \item[Use case:] Set up shift parameters
 \item[Actor:] System user
 \item[Goal:] To set up shift parameters
-\item[Overview:] Before the application generates a shift for the user, the user has to specify the shift paramters.
+\item[Overview:] Before the application generates a shift for the user, the user has to specify the shift parameters.
 The parameters include days, number of workers, computation time, and running mode.
 \item[Actor action:]
 \
@@ -133,7 +157,7 @@ The parameters include days, number of workers, computation time, and running mo
 
 \subsubsection{Sets up shift requirements}
 \begin{description}
-\item[user case:] Setup shift requirements
+\item[user case:] Set up shift requirements
 \item[Actor:] System user
 \item[Goal:]To sets up shift requirements
 \item[Overview:] Before the application generates a shift for the user, the user is able to give some shift requirements.
@@ -142,7 +166,7 @@ The available shift requirements are the expected number of working days, the ex
 \
 \begin{enumerate}
 \item user: The user clicks one of the shift requirements.
-\item system: The system pops up a dialog to ask the user to provide the parameter of the shift requirement.
+\item system: The system pops up a dialog that shows the description of the parameter and ask the user to provide the parameter of the shift requirement.
 \item user: The user provides the preferred parameters.
 \item user: The user clicks the Add button to add the parameters.
 \end{enumerate}
@@ -161,32 +185,23 @@ The available shift requirements are the expected number of working days, the ex
 \item[user case:] Generate a shift requirements
 \item[Actor:] System user
 \item[Goal:] To generate a shift
-\item[Overview:]After the user finishes setting up the parameters and requirements, the user is ready to generate a shift. The user can click the run button to start generating the shift.
+\item[Overview:]After the user finishes setting up the parameters and requirements, the user is ready to generate a shift. The user can click the "Generate" button to start generating the shift.
 \item[Actor action:]
 \
 \begin{enumerate}
-\item user: The user clicks the Run button to start generating a shift.
-\item system: The run button becomes disabled and start generating a shift for the user.
-\item system: The progress bar will keep posted the status of the task.
+\item user: The user clicks the Generate button to start generating a shift.
+\item system: The Generate button becomes disabled and starts generating a shift for the user.
+\item system: The progress bar will keep posted on the status of the task.
 \item system: When finishing generating a shift, the system shows the shift on the user interface.
-\item system: The run button will be unlocked so that users is able to re-run the task.
+\item system: The Generate button will be unlocked so that users can re-run the task.
 \end{enumerate}
-\end{description}
-%%%%
-\subsubsection{Create a new shift}
-\begin{description}
-\item[user case:] Create a new shift
-\item[Actor:] System user
-\item[Goal:] To create a new shift
-\item[Overview:] User can create a new shift by adding a tab. Each shift can be generated concurrently. 
-\item[Actor action:]
+\item[Alternative courses]
 \
-\begin{enumerate}
-\item user: The user clicks command+t on Mac computers or ctrl+t on windows computers.
-\item system: To create a new tab for the user.
-\end{enumerate}
+\begin{description}
+\item[Steps 3 and 4:] The user may click the close button to close the dialog.
 \end{description}
-%%%
+\end{description}
+
 \subsubsection{Save a shift}
 \begin{description}
 \item[user case:] Save a shift
@@ -196,15 +211,28 @@ The available shift requirements are the expected number of working days, the ex
 \item[Actor action:]
 \
 \begin{enumerate}
-\item user: The user clicks command+s on Mac computers or ctrl+s on windows computers.
-\item system: The system pops up a window to ask the user to input the name of the shift and the location that the user wants to store the shift.
-\item user: The user types the name and chooses a location.
-\item system: The system exports the shift of the current tab to an excel sheet with given name and to the given location.
+\item user: The user clicks download button on the website.
+\item system: The system directly download the file to user's device.
+\item user: The user open the file at the default download directory.
+\end{enumerate}
+\end{description}
+
+\subsubsection{Logout}
+\begin{description}
+\item[user case:] Logout
+\item[Actor:] System user
+\item[Goal:] To log out
+\item[Overview:] Users can log out of the system or switch to a different user.
+\item[Actor action:]
+\
+\begin{enumerate}
+\item user: The user clicks logout button on the website at navigation bar area.
+\item system: The system delete the Cookies and return to the login page.
 \end{enumerate}
 \end{description}
 
 \section{Database design}
-The data models of the application are intricate. The database not only has to store the user’s information but also the shift data. Since users are allowed to set up multiple shift requirements, the number of the shift constraints will vary. Besides, the data size of the shift will vary based on the number of days and the number of  workers. It is intuitive to use the NoSQL database to store and load the data; thus, we choose MongoDB to store the data. The document and the data model of the application are compatible. In the database, we create two collections to store documents, one collection is Users and the other is Shifts. The entity relationship diagram is shown below.
+The data models of the application are intricate. The database not only has to store the user’s information but also the shift data. Since users are allowed to set up multiple shift requirements, the number of shift constraints will vary. Besides, the data size of the shift will vary based on the number of days and the number of workers. It is intuitive to use the NoSQL database to store and load the data; thus, we choose to use Redis and MongoDB to store the data. Redis is responsible for storing the user's data. The key is the combination of user's username and password. The data of the user stored in Redis is in JSON format. The document and the data model of the application are compatible. In MongoDB we create a collection to store shift data. The entity relationship diagram is shown below.
 
 
 \begin{figure}[h]
@@ -216,12 +244,10 @@ The data models of the application are intricate. The database not only has to s
 
 
 \subsection{Users}
-The collection stores the basic information of a user such as username, password, email, and shifts. Here provides an example of a document. (In this prototype, we didn't use hash function to hash the password, but in the future, this feature will be added to protect user's information.)
+In Redis, the database stores the basic information of a user such as username, password, email, and shifts. Here is an example of a entry. 
 
 \begin{verbatim}
-[
-  {
-    _id: ObjectId("6518396323c0f9910c4fc915"),
+{
     username: 'admin',
     password: 'password',
     email: 'email@gmail.com',
@@ -231,20 +257,19 @@ The collection stores the basic information of a user such as username, password
       '9223cea4-69f8-4dab-8832-4b48c952d91d',
       '0750a390-7f19-4341-9aa2-f41ccfc2c0f9'
     ]
-  }
-]
+}
+
 \end{verbatim}
 The description of those fields is as follows.
 \begin{compactenum}[1.]
-\item \_id: A unique object id which is automatically generated by the database.
-\item username : The username of the user.
+\item username: The username of the user.
 \item password: The password of the user.
 \item email: The email of the user.
-\item shifts: A nested document that stores the shift ids owned by the user. In this example, the user owns 4 shifts. The shifts id will be used to load the shifts in Shifts collection.
+\item shifts: A nested document that stores the shift is owned by the user. In this example, the user owns 4 shifts. The shifts ID will be used to load the shifts in the Shifts collection.
 \end{compactenum}
 
 \subsection{Shifts}
-The collection stores shifts' information. The shifts' information includes shift\_id, parameters, and the content of the shift. Here provides a snippet of a document in the collection.
+The collection stores shifts' information. The shifts' information includes shift\_id, parameters, and the content of the shift. Here is a snippet of a document in the collection.
 \begin{verbatim}
 [
   {
@@ -316,29 +341,51 @@ The collection stores shifts' information. The shifts' information includes shif
 ]
 \end{verbatim}
 \begin{compactenum}[1.]
-\item \_id: A unique object id which is automatically generated by the database.
+\item \_id: A unique object id that is automatically generated by the database.
 \item shift\_id: The id of the shift. The user entity will also store \textbf{shift\_id} in the \textbf{shifts} field.
 \item computation\_time: The computation time of the shift.
 \item constraints: The shift requirements. The field is a nested document that stores the name of the requirement and parameters.
 \item days: The number of days
 \item name\_list : The name list.
 \item number\_of\_workers: The number of workers in the shift.
-\item tables: Tables is a 3-D array which can stores multiple shifts. Each shift is a 2-D array.
-\item type: The type of optimizer that solves the shift scheduling optimization problem. The type field will either be 'SA' or 'DAU'. SA means the optimization algorithm is simulated annealing algorithm, and DAU means the problem is solved by using the digital annealing unit.
+\item tables: Tables are a 3-D array that can store multiple shifts. Each shift is a 2-D array.
+\item type: The type of optimizer that solves the shift scheduling optimization problem. The type field will either be 'SA' or 'DAU'. SA means the optimization algorithm is a simulated annealing algorithm, and DAU means the problem is solved by using the digital annealing unit.
 \end{compactenum}
 
 \subsection{Sample Code}
 
-Since we use NoSQL database, we are only able to provide the sample code that we used to insert, search, and update the document.
+Since we use the NoSQL database, we are only able to provide the sample code that we used to insert, search, and update the document.
 The following code snippets are parts of the class DataAdapter.
 
 \subsubsection{Search user}
 \begin{verbatim}
-user_data = self.db.Users.find_one({"username": username, "password": password})
+redis_client = redis.StrictRedis(
+                    host='redis-12297.c302.asia-northeast1-1.gce.cloud.redislabs.com',
+                    port=12297,
+                    password=''
+                )
+key = "eugenepassword"
+json_data = redis_client.execute_command('JSON.GET', key)
+user_data = json.loads(json_data)
+print(json.dumps(user_data, indent=4))
+\end{verbatim}
+
+The result is
+\begin{verbatim}
+{
+    "username": "eugene",
+    "password": "password",
+    "email": "email@gmail.com",
+    "shifts": [
+        "6885d765-1b7c-680f-f583-9011e385a991",
+        "e31f03eb-a7e6-580a-e602-21e8fb22ce20",
+        "533cdbce-1386-5971-ec73-fff22325ca81"
+    ]
+}
 \end{verbatim}
 
 \subsubsection{Update user's shifts}
-The following code snippet updates user's shifts by using update\_one function.
+The following code snippet updates the user's shifts by using the update\_one function.
 \begin{verbatim}
 user_collection = self.db.Users
 user_collection.update_one(
@@ -348,7 +395,7 @@ user_collection.update_one(
 \end{verbatim}
 
 \subsubsection{Save a shift}
-The following code snippet uses update\_one to save a shifts, but we set upsert=True for the case that the shift doesn't originally exist. In that case, it will insert a document.
+The following code snippet uses update\_one to save shifts, but we set upsert=True for the case that the shift doesn't originally exist. In that case, it will insert a document.
 \begin{verbatim}
 collection = self.db.Shifts
 inserted_data = shift.getShiftConfiguration() 
@@ -367,9 +414,11 @@ shift = self.db.Shifts.find_one({"shift_id": shift_id})
 \end{verbatim}
 
 \section{Architectural design}
-The scope of the application includes the user interface, server, database, and solvers. The user interface collects user's preference of the shift. The server components processes user's requests to load/save the data and handle the computation. The database stores and loads the users' information and shifts. Solvers are used to solve the optimization problem to generate the shift that satisfies the requirements as much as possible. After acquiring the solution from cloud computation or on-device computation, Solvers will return the shift back to view/controller to show on the user interface. In this version, solvers will use web socket to do the communication. After View/controller received the shift data, it will send the data back to server to store the data into the database. 
+The scope of the application includes the user interface, server, database, and solvers. The user interface collects the user's preference for the shift. The server components process the user's requests to load/save the data and handle the computation. The database stores and loads the users' information and shifts. Solvers are used to solve the optimization problem to generate the shift that satisfies the requirements as much as possible. After acquiring the solution from Fujitsu's server or the local solver at the server, Solvers will return the shift back to view/controller to show on the user interface. In this version, solvers use a web socket to do the communication. This allows the server to communicate the client. After the View/controller receives the shift data, it will send the data back to the server to store the data in the database. 
 
-The following section will give details on architecture design for each component.
+In this version, the server-side architecture is designed as a microservices architecture. An API gateway is responsible for managing fundamental requests, including tasks such as login, loading/saving shifts, and querying available services for clients. Additionally, the API gateway oversees the registration of microservices. When a microservice is activated, it sends a registration request to the microservices gateway. Subsequently, when a client sends a request to inquire about the currently available services, the gateway initiates a health check by sending requests to each microservice to ensure their operational status.
+
+The following section will give details on the architecture design for each component.
 
 \begin{figure}[h]
 \centering
@@ -379,9 +428,12 @@ The following section will give details on architecture design for each componen
 \end{figure}
 
 \subsection{Server}
-We developed a tiny framework that enables us to flexibly extend the function of the server. The server's architecture is as shown in Fig.~\ref{framework}
-The server is composed of two parts, a http server and a web socket server. When the server received an incoming request, the instance of \textbf{ProtocolTypeRouter} will do routing based on the request's protocol. For example, if the request is a http request, ProtocolTypeRouter will transfer the request to HttpServer. When the server received a request sent from ProtocolTypeRouter, both servers will do routing based on the request's URI to a certain route. Each route will handle the request and the response. The only things that developers have to do is to define the API endpoints and override the handle function of the corresponding Route to handle the request.
-Here provides a snippet of code that shows how to use this tiny framework.
+We developed a tiny framework that enables us to flexibly extend the function of the server.  In this project, the API gateway, and two microservices are developed under this framework. Each part is able to establish a HTTP server by initializing \textbf{HttpServer} and a websocket server by initializing \textbf{WebsocketServer}. Each server can register several routes for clients to operate. 
+
+Clients' requests are handled by each route. The route will response the data directly through the established socket connection based on the protocol.
+For example, a micro-service that handles the simulated annealing solver is shown in Fig.~\ref{framework}
+
+Here is a snippet of code that shows how to use this tiny framework.
 \begin{verbatim}
 class TestRoute(Route):
 
@@ -410,13 +462,13 @@ if __name__ == '__main__':
     })
     server.run()
 \end{verbatim}
-We just need to inherit the Route type and override handle function, and register the Route type to the corresponding server and specify the uri.
-This enables us to easily extend the function of server. Fig.~\ref{serveruml} details the UML of the server side.
+We just need to inherit the Route type override the handle function, and register the Route type to the corresponding server, and specify the URI.
+This enables us to extend the function of the server easily. Fig.~\ref{serveruml} details the UML of the server side.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{framework}
-\caption{The architecture of the tiny framework}
+\caption{The architecture that uses this tiny framework to create a micro-service.}
 \label{framework}
 \end{figure}
 
@@ -430,11 +482,11 @@ This enables us to easily extend the function of server. Fig.~\ref{serveruml} de
 
 \subsubsection{RemoteSolver}
 RemoteSolver is a class that establishes the web socket connection between UI and the server. 
-It also processes the message sent from the server side and connect itself and the progress bar to update the status.
+It also processes the message sent from the server side and connects itself and the progress bar to update the status.
 
 We wrote two remote solvers, RemoteDAUSolver and RemoteSASolver. The corresponding APIs are ws://localhost:8888/dau and ws://localhost:8888/sa. Both solvers inherit from RemoteSolver.
-When the function solve is called, it will use web socket to send the optimization problem to the server. Here provides a simple example of the data.
-The data format in the communication is in the json format.
+When the function solve is called, it will use a web socket to send the optimization problem to the server. Here is a simple example of the data.
+The data format in the communication is in the JSON format.
 \begin{verbatim}
 {
     "type": "SA",
@@ -474,11 +526,11 @@ The data format in the communication is in the json format.
 }
 
 \end{verbatim}
-In the server side, we defined a class SolverWebsocketRoute which inherits from WebSocketRoute. 
-The class will process the request and invoke the corresponding computation service to do the optimization problem.
+On the server side, we defined a class SolverWebsocketRoute which inherits from WebSocketRoute. 
+The class will process the request and invoke the corresponding computation service to solve the optimization problem.
 We also defined two classes that inherit from SolverWebsockeRoute, which are DAUWebsocketRoute and SAWebsocketRoute.
-Both give the computation service to the base class.
-During the computation, the server will keep UI posted the state of the computation. For example, when the problem is compiled. It will use web socket to send
+Both give the computation service to the base class. Both DAUWebsocketRoute and SAWebsocketRoute are used in two different micro-services.
+During the computation, the server will keep UI posted on the state of the computation. For example, when the problem is compiled. It will use a web socket to send
 \begin{verbatim}
 {"message": "status", "status" : "compiling"}.
 \end{verbatim}
@@ -487,14 +539,14 @@ The user interface can update the state of the computation to the user.
 \subsubsection{Data Server}
 The data server uses HTTP protocol to communicate with the user interface. 
 There are 5 APIs written in the server. 
-Each API is handled by a Route class which inherits from class Route and override the function handle.
+Each API is handled by a Route class which inherits from the class Route and overrides the function handle.
 
 \begin{description}
 \item[Get the user]
 \
 \begin{description}
 \item[API Endpoints:] /user
-\item[Description:] Through /user URI, the server accepts the post method. The client posts username and password to the server. 
+\item[Description:] Through /user URI, the server accepts the post method. The client posts a username and password to the server. 
 The server will use the function getUser defined in the DataAdapter to get the user owned by the collection User. Then, the server will return the user in JSON.
 \item[Method:] POST
 \item[Example Request Data:]
@@ -626,7 +678,7 @@ no response data
 \begin{description}
 \item[API Endpoints:] /loadshifts
 \item[Description:]Through /loadshifts URI, the server accepts the post method. The client posts the user’s information to the server to load all shifts for the user.
-The server will use the function loadShifts defined in the DataAdapter to get all shifts owned by the user. The function loadShifts will return a list of Shift instances. Finally, the server will convert each shift in the list to a dictionary variable and store the data in a list. Then, return the data back to the client.
+The server will use the function loadShifts defined in the DataAdapter to get all shifts owned by the user. The function loadShifts will return a list of Shift instances. Finally, the server will convert each shift in the list to a dictionary variable and store the data in a list. Then, return the data to the client.
 \item[Method:] POST
 \item[Example Request Data:]
 \begin{verbatim}
@@ -696,6 +748,106 @@ The server will use the function loadShifts defined in the DataAdapter to get al
 \end{verbatim}
 \end{description}
 
+\item[Download a shift]
+\
+\begin{description}
+\item[API Endpoints:] /download/[shift\_id]
+\item[Description:]Through /download/ URI, the server accepts the get method. The client request the server with the shift’s information to the server to download the shift.
+The server will use the function loadShift defined in the DataAdapter to get the shift owned by the user. The function loadShift will return a Shift instance. Finally, the server will convert the shift to a csv file and return the data to the client.
+\item[Method:] GET
+\item[Example Request Data:] No need to provide the data
+\item[Example Response Data:] A CSV file
+\end{description}
+
+
+\end{description}
+
+\subsection{Microservices}
+\begin{description}
+    \item[Request for available services]
+    \
+    \begin{description}
+        \item[API Endpoints: ] /gethealthcheck
+        \item[Description: ] This API is opened to clients to check the availability of the service. The API will return the current available services and service's url. This enables clients to access micro services through those urls.
+        \item[Method: ] GET
+        \item[Example Request Data: ] No need to provide the data
+        \item[Example Response Data: ]
+        \begin{verbatim}
+        [
+            {
+                "service": "SA",
+                "status": "ON",
+                "url": "ws://localhost:8890/sa",
+                "healthcheck": "http://localhost:8890/healthcheck"
+            },
+            {
+                "service": "DAU",
+                "status": "ON",
+                "url": "ws://localhost:8889/dau",
+                "healthcheck": "http://localhost:8889/healthcheck"
+            }
+        ]
+        \end{verbatim}
+    \end{description}
+
+    \item[Micro-service's health check]
+    \
+    \begin{description}
+        \item[API Endpoints: ] /healthcheck
+        \item[Description: ] The API will return the current status of the service. This API is available to each micro-service. Once the client request a health check, the main API gateway will send the request to each micro-service to check if the service is healthy or not.
+        \item[Method: ] GET
+        \item[Example Request Data: ] No need to provide the data
+        \item[Example Response Data: ]
+        \begin{verbatim}
+        {
+            "status": "healthy"
+        }
+        \end{verbatim}
+    \end{description}
+
+
+    \item[Microservices registration]
+    \
+    \begin{description}
+        \item[API Endpoints: ] /registry/add
+        \item[Description: ] The API is opened to the microservices. Once the microservice is opened, it needs to use this API to register in the server.
+        \item[Method: ] POST
+        \item[Example Request Data: ]
+        \begin{verbatim}
+        {
+            "healthcheck": "http://localhost:8889/healthcheck",
+            "service": "DAU", 
+            'url' : "ws://localhost:8889/dau"
+        }
+        \end{verbatim}
+        \item[Example Response Data: ]
+        \begin{verbatim}
+        {
+            "status": "success"
+        }
+        \end{verbatim}
+    \end{description}
+
+    \item[Microservices delete]
+    \
+    \begin{description}
+        \item[API Endpoints: ] /registry/delete
+        \item[Description: ] The API is opened to the microservices. Once the microservice is closed, it needs to use this API to drop the microservice in the server.
+        \item[Method: ] POST
+        \item[Example Request Data: ]
+        \begin{verbatim}
+        {
+            "service": "DAU", 
+        }
+        \end{verbatim}
+        \item[Example Response Data: ]
+        \begin{verbatim}
+        {
+            "status": "success"
+        }
+        \end{verbatim}
+    \end{description}
+
 
 
 
@@ -704,43 +856,43 @@ The server will use the function loadShifts defined in the DataAdapter to get al
 \subsection{Database}
 We design two models, User and Shift, and class DataAccess to manipulate the data in the Application.
 Class User corresponds to a document in the collection Users and class Shift corresponds to a document in the collection Shifts.
-Please refer to Fig.~\ref{dataadapteruml}. for the UML of data adapter class.
+Please refer to Fig.~\ref{dataadapteruml}. for the UML of the data adapter class.
 Class DataAccess is an interface that will be implemented by both DataAdapter and RemoteDataAdapter.
 
 \subsubsection{DataAdapter}
-The DataAdapter will establish a connection to the MongoDB database. We can load and save the document into the collections. Followings describe the function defined in the class DataAdapter.
-% Things written by Gorden
+The DataAdapter will establish a connection to the MongoDB database. We can load and save the document into the collections. The following describes the function defined in the class DataAdapter.
+
 \begin{description}
-\item[getUser:]We can get the user’s information by providing the username and password to the function. The function will search the document in the collection Users with the given data. If the function successfully gets a document from the collection, it will generate an instance of class User and return the object; otherwise, return None.
-\item[updateUserShifts:]We can update the user’s information by providing the document in the collection Users to the function. The function will search and update the document in the collection Users with the given data.
+\item[getUser:]We can get the user’s information by providing the username and password to the function. The function will use username and password as a key to search and load the user's data from Redis database. If the function successfully obtain the data, it will generate an instance of class User and return the object; otherwise, return None.
+\item[updateUserShifts:]We can update the user’s information by providing the document in the collection Users to the function. The function will search and update the document in the collection of Users with the given data.
 \item[saveShift:]We can update the shift’s information by providing the document in the collections Users and Shifts to the function. The function will search and update the document in the collection Shifts with the given data.
 \item[loadShift:]We can get the shift’s information by providing the shift\_id to the function. The function will search the document in the collection Shifts with the given data. If the function successfully gets a document from the collection, it will generate an instance of class Shift and return the object.
 \item[loadShifts:]We can get the several shifts’ information by providing the document in the collection Users to the function. The function will search the document in the collection Shifts with the given data. The function will get several documents from the collection and generate a list to store the documents and return the object.
 \end{description}
 
 
-\subsection{RemoteDataAdapter}
-The RemoteDataAdapter serves as a connection between user interface and the server. When the user load and save data through the 
-% Things written by Gorden
-\begin{description}
-\item[getUser:]The function will use the HTTP POST method to post the username and password, which are the parameters of the function, to the server. When the function receives the response from the server, the server will generate an instance of class User and return.
-\item[updateUserShifts:]The function will use the HTTP POST method to post the document in the collection Users, which is the parameter of the function, to the server. When the function receives the response from the server, the server will update the document in the collection Users with the given data.
-\item[saveShift:]The function will use the HTTP POST method to post the document in the collections Users and Shifts, which are the parameters of the function, to the server. When the function receives the response from the server, the server will update the document in the collection Shifts with the given data.
-\item[loadShift:]The function will use the HTTP POST method to post the shift\_id, which is the parameter of the function, to the server. When the function receives the response from the server, the server will generate an instance of class Shift and return.
-\item[loadShifts:]The function will use the HTTP POST method to post the document in the collection Users, which is the parameter of the function, to the server. When the function receives the response from the server, the server will generate a list to store the documents and return the object.
-\end{description}
+%\subsection{RemoteDataAdapter}
+%The RemoteDataAdapter serves as a connection between the user interface and the server. When the user loads and saves data through the 
+%\begin{description}
+%\item[getUser:]The function will use the HTTP POST method to post the username and password, which are the parameters of the function, to the server. When the function receives the response from the server, the server will generate an instance of the class User and return.
+%\item[updateUserShifts:]The function will use the HTTP POST method to post the document in the collection Users, which is the parameter of the function, to the server. When the function receives the response from the server, the server will update the document in the collection of Users with the given data.
+%\item[saveShift:]The function will use the HTTP POST method to post the document in the collections Users and Shifts, which are the parameters of the function, to the server. When the function receives the response from the server, the server will update the document in the collection Shifts with the given data.
+%\item[loadShift:]The function will use the HTTP POST method to post the shift\_id, which is the parameter of the function, to the server. When the function receives the response from the server, the server will generate an instance of class Shift and return.
+%\item[loadShifts:]The function will use the HTTP POST method to post the document in the collection Users, which is the parameter of the function, to the server. When the function receives the response from the server, the server will generate a list to store the documents and return the object.
+%\end{description}
 
 
-\subsection{UI}
-As shown in Fig.~\ref{uimainwindow}. The main window is composed of several UI components. The relationship between each component is presented in the Fig.~\ref{uiuml}.
-\begin{figure}
-\centering
-\includegraphics[width=\textwidth]{ui_uml}
-\caption{UI's UML}
-\label{uiuml}
-\end{figure}
+%\subsection{UI}
+%As shown in Fig.~\ref{uimainwindow}. The main window is composed of several UI components.
+%The relationship between each component is presented in the Fig.~\ref{uiuml}.
+%\begin{figure}
+%\centering
+%\includegraphics[width=\textwidth]{ui_uml}
+%\caption{UI's UML}
+%\label{uiuml}
+%\end{figure}
 \subsection{Solvers(Algorithms)}
-The shift scheduling problem is modeled by the quadratic unconstrained binary optimization (QUBO) problem. 0 represents a day off and 1 represents a working day. Once the user adds shift requirements, they implicitly formulate their QUBO problem. The QUBO problem is compiled in user's computer and solved by either the digital annealer or the simulated annealing algorithm on users' device. After the device finishes computation, the solution is then post-processed to generate the final schedule. Digital annealer is a computation service provided by Fujitsu Ltd. Digital annealer is a quantum-inspired device that is good at solving optimization problems.
+The shift scheduling problem is modeled by the quadratic unconstrained binary optimization (QUBO) problem. 0 represents a day off and 1 represents a working day. Once the user adds shift requirements, they implicitly formulate their QUBO problem. The QUBO problem is compiled in the user's computer and solved by either the digital annealer or the simulated annealing algorithm on user's device. After the device finishes computation, the solution is then post-processed to generate the final schedule. Digital annealer is a computation service provided by Fujitsu Ltd. Digital annealer is a quantum-inspired device that is good at solving optimization problems.
 
 In this prototype, the application offers limited shift requirements for users to choose from. The available shift requirements are listed and explained in detail below. The source code of the mathematic constraints is written in this file constraints.py.
 
@@ -762,7 +914,7 @@ class ConstraintFunction(object):
         pass
 \end{verbatim}
 
-In the project, there are two solvers available. One is digital annealer, and the other is simulated annealing solver. The UML digram is shown in Fig.~\ref{umlsolvers}.
+In the project, there are two solvers available. One is a digital annealer, and the other is a simulated annealing solver. The UML diagram is shown in Fig.~\ref{umlsolvers}.
 
 \begin{figure}[h]
 \centering
@@ -820,9 +972,9 @@ $$H = \sum_{i}^N\sum_{j}^Dx_{ij}-q_{ij}$$
 
 The constraint set up a limit on the maximum number of consecutive shifts. 
 
-This constraint could be modeled by using the supplementary variables. However, this would result in increasing the problem scale. This technique would probably double or triple the number of original variables. Moreover, the solver, Fujitsu's digital annealer, doesn't know the meaning of each variable after compiling the solution into the accepted data; thus, after the annealing process, it would be possible to find a better solution.
+This constraint could be modeled by using the supplementary variables. However, this would result in an increase in the problem scale. This technique would probably double or triple the number of original variables. Moreover, the solver, Fujitsu's digital annealer, doesn't know the meaning of each variable after compiling the solution into the accepted data; thus, after the annealing process, it would be possible to find a better solution.
 
-The digital annealer computation service offers users to post the inequality.
+The digital annealer computation service allows users to post the inequality.
 
 The inequalities would be an array and append the following inequality.
 
@@ -843,5 +995,7 @@ The constraint is for employees' days off welfare. The employees working in grav
 \end{figure}
 
 \section{Runnable Prototype with GUI and Video}
-https://youtu.be/3ukQoSu0d6I
+https://youtu.be/q6wpCm87sV8
+
+\section{}
 \end{document}  

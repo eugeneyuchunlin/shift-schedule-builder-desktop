@@ -9,6 +9,7 @@ from src.model.shift import Shift
 from src.model.registry import Registry
 from src.algorithms.Solvers import SASolver, DAUSolver
 import time
+import requests
 from os import path
 
 mongodbDataAdapter = DataAdapter()
@@ -113,7 +114,22 @@ class StaticFile(Route):
     def handle(self):
         with open(f'.{self.request.uri}', 'r') as f:
             self.response.send(200, f.read(), content_type='text/css')
-    pass 
+    pass
+
+class DownloadShift(Route):
+    def handle(self):
+        if self.request.method == 'GET':
+            print(self.request.uri)
+            shift_id = self.request.uri.split('/')[-1]
+            shift = mongodbDataAdapter.loadShift(shift_id)
+            shift_df = shift.getShift()
+            filename = f'{shift_id}.csv'
+            shift_df.to_csv(filename, index=False)
+            with open(filename, 'r') as f:
+                content = f.read()
+            self.response.send(200, content, content_type='text/csv')
+        else:
+            self.response.send(400, 'Bad Request')
 
 
 class AddRegistry(Route):
@@ -138,14 +154,28 @@ class DeleteRegistry(Route):
             mongodbDataAdapter.addRegistry(registry)
             self.response.send(200, 'Finish')
         else:
-            self.response.send(400, 'Bad Request')            
+            self.response.send(400, 'Bad Request')      
+
+class MicroserviceHealthCheckRoute(Route):
+
+    def handle(self):
+        if self.request.method == 'GET':
+            self.response.send(200, json.dumps({'status' : 'healthy'}), content_type='application/json')
 
 class GetHealthCheck(Route):
 
     def handle(self):
         if self.request.method == 'GET':
             registry = mongodbDataAdapter.getHealthCheck()
-            self.response.send(200, json.dumps(registry), content_type='application/json')
+
+            health_services = []
+            for i in range(len(registry)):
+                if registry[i]['status'] == "ON":
+                    response = requests.get(registry[i]['healthcheck'])
+                    data = response.json()
+                    if data['status'] == 'healthy':
+                        health_services.append(registry[i]) 
+            self.response.send(200, json.dumps(health_services), content_type='application/json')
         else:
             self.response.send(400, 'Bad Request')
 
@@ -184,6 +214,7 @@ if __name__ == '__main__':
             (r'/user', GetUser), (r'/updateusershifts', UpdateUserShifts), 
             (r'/saveshift', SaveShift), (r'/loadshift$', LoadShift), 
             (r'/loadshifts$', LoadShifts),
+            (r'/download/', DownloadShift),
             (r'/registry/add', AddRegistry), (r'/registry/delete', DeleteRegistry),
             (r'/gethealthcheck', GetHealthCheck)
         ]),

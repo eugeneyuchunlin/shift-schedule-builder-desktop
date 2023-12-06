@@ -47,6 +47,9 @@ class DataAccess(object):
     def loadShifts(self, user:User):
         pass
 
+    def getHealthCheck(self):
+        pass
+
 class DataAdapter(DataAccess):
 
     def __init__(self):
@@ -55,11 +58,9 @@ class DataAdapter(DataAccess):
     def getUser(self, username:str, password:str):
         redis_key = f"{username}{password}"
         json_data = redis_client.execute_command('JSON.GET', redis_key)
-        user_data = json.loads(json_data)
-        #user_data = self.db.Users.find_one({"username": username, "password": password})
-        if user_data is None:
+        if json_data is None:
             return
-
+        user_data = json.loads(json_data)
         user = User(**user_data)
         return user
     
@@ -107,7 +108,7 @@ class DataAdapter(DataAccess):
 
     def addRegistry(self, registry:Registry):
         registry_collection = self.db.Registries
-        registry_collection.update_one({"service": registry.getService()}, {"$set": {"status": registry.getStatus(), "url" : registry.getUrl()}}, upsert=True)
+        registry_collection.update_one({"service": registry.getService()}, {"$set": {"status": registry.getStatus(), "url" : registry.getUrl(), "healthcheck" : registry.getHealthCheck()}}, upsert=True)
         pass
 
     def deleteRegistry(self, registry:Registry):
@@ -154,3 +155,8 @@ class RemoteDataAdapter(DataAccess):
         r = requests.post("http://localhost:8888/loadshifts", json=user.data())
         shifts_data = json.loads(r.text)
         return json.dumps(shifts_data)
+
+    def getHealthCheck(self):
+        r = requests.get("http://localhost:8888/gethealthcheck")
+        data = json.loads(r.text)
+        return data

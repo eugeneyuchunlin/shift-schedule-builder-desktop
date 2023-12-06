@@ -48,10 +48,22 @@ class WorkingArea(QWidget):
             self.shift_id = shift_id
         else:
             self.shift_id = str(uuid.uuid4())
+
+        services = RemoteDataAdapter().getHealthCheck()
+        available_services = {}
+        for service in services:
+            if service['status'] == 'ON':
+                available_services[service['service']] = service['url']
+        print(available_services)
+        self.services = available_services
+
+
         self.initUI()
 
         if shift_id is not None:
             self.table.loadDataFrame(RemoteDataAdapter().loadShift(self.shift_id).getShift())
+
+        
 
     def initUI(self):
         """
@@ -65,7 +77,7 @@ class WorkingArea(QWidget):
         """
         layout = QGridLayout()
         self.table = ShiftTable()
-        self.form = ParametersForm()
+        self.form = ParametersForm(self.services)
         self.progress_bar = ProgressBar()
         
         self.form.runbutton.clicked.connect(self.runTrigger)

@@ -22,12 +22,16 @@
         }
 
         #parameters{
-            width: 300px;
+            width: 400px;
             margin: 30px auto;
             padding: 20px;
             border: 1px solid #dee2e6;
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .tablewrapper{
+            overflow-x: auto; /* Enable horizontal scrolling for the table */
         }
 
         input, select {
@@ -51,6 +55,11 @@
 
         .primary-btn:hover{
             background-color: #0056b3; 
+        }
+
+        .primary-btn:disabled{
+            background-color: #ddd;
+            color: #888;
         }
 
         body {
@@ -100,7 +109,7 @@
         }
 
         #tagBox {
-            width: 300px;
+            width: 400px;
         }
 
         #tagList {
@@ -150,6 +159,7 @@
             left: 0;
             width: 100%;
             height: 100%;
+            z-index: 1;
             background-color: rgba(0, 0, 0, 0.5);
         }
 
@@ -209,12 +219,15 @@
             background-color: rgb(230, 230, 230);
         }
 
-        /* .headcol{ */
-            /* position: sticky; */
-            /* left: 0; */
-            /* width: 3rem; */
-            /* z-index: 1; */
-        /* } */
+        .headcol{ 
+            position: sticky; 
+            left: 0; 
+            width: 2rem; 
+            z-index: 1;
+            background-color: white;
+            font-weight: bold;
+            border-left: 0px;
+        }
 
     </style>
 </head>
@@ -231,18 +244,20 @@
             <div id="shift-tabs" class="scrollmenu">
                 <a style="width: 50px;" onclick="newTab()">+</a>
             </div>
-              
-            <table id="shiftSchedule">
-                <thead>
-                    <tr>
-                        <!-- <th></th> Empty cell for the top-left corner -->
-                        <!-- Add day headers dynamically based on the number of days -->
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Add rows for each employee and shift using JavaScript -->
-                </tbody>
-            </table>
+            <div class="tablewrapper">
+                <table id="shiftSchedule">
+                    <thead>
+                        <tr>
+                            <!-- <th></th> Empty cell for the top-left corner -->
+                            <!-- Add day headers dynamically based on the number of days -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Add rows for each employee and shift using JavaScript -->
+                    </tbody>
+                </table>
+            </div> 
+            
         </div>
         
 
@@ -263,9 +278,16 @@
                     <option value="SA" id="SA" disabled>Simulated Annealing</option>
                     <option value="DAU" id="DAU" disabled>Quantum Annealing</option>
                 </select>
+                <button class="primary-btn" onclick="reloadServices()">Reload Modes</button>
+                <button class="primary-btn" onclick="updateSchedule()">Update Shift</button>
+                <button class="primary-btn" onclick="generateAShift()" id="generate-btn">Generate</button>
+                <a id="download">Download</a>
 
-                <button class="primary-btn" onclick="updateSchedule()">Update Schedule</button>
-                <button class="primary-btn" onclick="generateAShift()">Generate A Shift</button>
+                <div id="finishedModal" class="modal">
+                    <div class="modal-content">
+                        <h1>Finished!!</h1> 
+                    </div>
+                </div> 
             </div>
             
             <div id="tagBox" class="floatCard">
@@ -488,6 +510,7 @@
         function saveShift(){
             if(all_shifts[current_shift].shift_id === undefined){
                 all_shifts[current_shift].shift_id = guid();
+                document.getElementById('download').href = '/download/' + all_shifts[current_shift].shift_id;
                 var shifts = getCookie('shifts').split(',');
                 shifts.push(all_shifts[current_shift].shift_id);
                 updateCookie('shifts', shifts.join(','), 1);
@@ -497,6 +520,7 @@
 
             var shift = all_shifts[current_shift];
             console.log(shift);
+            console.log(shifts);
             fetch('/saveshift', {
                 method: 'POST',
                 headers: {
@@ -515,14 +539,7 @@
             });
         }
 
-        var socket = new WebSocket("ws://localhost:8890/sa");
-        socket.onopen = function(e) {
-            console.log("[open] Connection established");
-        };
-
-        var temp_data = null;
-
-        socket.onmessage = function(event) {
+        function onMessage(event){
             var data = JSON.parse(event.data);
             console.log(`[message] Data received from server: ${data.message}`);
             if(data.message === 'result'){
@@ -530,8 +547,15 @@
                 console.log(all_shifts[current_shift]['table'])
                 setUpAShift(current_shift);
                 saveShift();
+                document.getElementById('generate-btn').disabled = false;
+                openModal('finishedModal');
+                setTimeout(function(){ closeModal('finishedModal'); }, 3000);
             }
         };
+        var sockets = []
+        // var sa_socket = new WebSocket("ws://localhost:8890/sa");
+        // socket.onmessage = onMessage
+
 
         var all_shifts = [];
         var current_shift = null;
@@ -585,8 +609,9 @@
             all_shifts[current_shift]['computation_time'] = data['computation_time'];            
             all_shifts[current_shift]['constraints'] = data['constraints'];
             all_shifts[current_shift]['table'] = data['content'];
+            document.getElementById('generate-btn').disabled = true;
+            sockets[data['type']].send(JSON.stringify(data));
 
-            socket.send(JSON.stringify(data));
         }
 
 
@@ -636,11 +661,14 @@
             var table = document.getElementById('shiftSchedule');
             table.innerHTML = '';
             var headerRow = table.insertRow(-1);
-            headerRow.insertCell(0); // Empty cell for the top-left corner
+            var worker = headerRow.insertCell(0)
+            worker.innerHTML = 'Worker';
+            worker.classList.add('headcol'); // Empty cell for the top-left corner
+            
             for (var i = 1; i <= shift['days']; i++) {
                 var cell = headerRow.insertCell(i);
                 cell.innerHTML = i;
-                
+                // cell.classList.add('headcol');
             }
 
             // Create rows for each employee
@@ -648,6 +676,7 @@
                 var row = table.insertRow(-1);
                 var nameCell = row.insertCell(0);
                 nameCell.innerHTML = shift['name_list'][j];
+                nameCell.classList.add('headcol');
                 
                 // Initialize shift cells
                 for (var k = 0; k < shift['days']; k++) {
@@ -662,6 +691,7 @@
             if(document.getElementById(shift['type']).disabled){
                 document.getElementById('computationMode').value = 'N';
             }
+            document.getElementById('download').href = '/download/' + shift['shift_id'];
         }
 
 
@@ -670,6 +700,30 @@
             deleteCookie('password');
             deleteCookie('shifts');
             window.location.href = '/';
+        }
+
+        function reloadServices(){
+            fetch('/gethealthcheck', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => response.json()).then(data => {
+                console.log(data);
+                sockets = {}
+                for(var i = 0; i < data.length; ++i){
+                    var service = data[i].service;
+                    var dom = document.getElementById(service);
+                    
+                    console.log(service);
+                    console.log(data[i].status)
+                    dom.disabled = data[i].status === 'OFF';
+                    
+                    var socket = new WebSocket(data[i].url);
+                    socket.onmessage = onMessage;
+                    sockets[service] = socket;
+                }
+            });
         }
 
         window.onload = function() {
@@ -695,22 +749,7 @@
             }
 
             // load services
-            fetch('/gethealthcheck', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }).then(response => response.json()).then(data => {
-                console.log(data);
-                for(var i = 0; i < data.length; ++i){
-                    var service = data[i].service;
-                    var dom = document.getElementById(service);
-                    
-                    console.log(service);
-                    console.log(data[i].status)
-                    dom.disabled = data[i].status === 'OFF';
-                }
-            });
+            reloadServices(); 
         }
 
         // Open the modal

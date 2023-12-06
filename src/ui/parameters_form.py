@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
+from src.model.data_adapter import RemoteDataAdapter
 
 
 class ShiftRequirementTagBase(QWidget):
@@ -135,17 +136,17 @@ class ParametersForm(QWidget):
         parameters_fields: a dictionary of the parameters that contains the name of the parameter as the key
                            and the default value of the parameter as the value
     """
-    def __init__(self):
+    def __init__(self, availability):
         """
         This is the constructor of the ParametersForm class. It calls the constructor of the QWidget class.
         You can specify the parameters' fields and their default values of the algorithm by setting the parameter_fields argument.
         """
         super().__init__()
 
+        print(availability)
+        self.initUI(availability)
 
-        self.initUI()
-
-    def initUI(self):
+    def initUI(self, availability):
         """
         This method creates the form for user to input the parameters of the algorithm.
         The fields of the form are created dynamically based on the parameters_fields attribute.
@@ -221,8 +222,10 @@ class ParametersForm(QWidget):
         layout.addWidget(self._computation_time_edit, 2, 1)
 
         self.combo = QComboBox()
-        self.combo.addItem("DAU")
-        self.combo.addItem("SA")
+        for service in availability:
+            self.combo.addItem(service)
+        # self.combo.addItem("DAU")
+        # self.combo.addItem("SA")
 
         layout.addWidget(QLabel("Choose a running mode"), 3, 0)
         layout.addWidget(self.combo, 3, 1)
